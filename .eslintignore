@@ -9,3 +9,7 @@ dist/
 
 # Env files
 .env
+
+# Test coverage
+coverage/
+

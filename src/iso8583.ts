@@ -120,8 +120,6 @@ export class Iso8583 {
     return lines.join('\n')
   }
 
-  // ---------------- dispatch ----------------
-
   private encodeField(spec: FieldSpec, value: unknown): Buffer {
     const f = spec.format
     switch (f.kind) {

@@ -14,19 +14,26 @@
     "prepublishOnly": "npm run clean && npm run build",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
   },
   "author": "Tikpay Pty Ltd",
   "license": "MIT",
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.18.0",
     "@typescript-eslint/eslint-plugin": "^8.41.0",
     "@typescript-eslint/parser": "^8.41.0",
+    "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.34.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.32.0",
     "prettier": "^3.6.2",
-    "typescript": "^5.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=18.18.0"
