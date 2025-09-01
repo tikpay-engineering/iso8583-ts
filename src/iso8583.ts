@@ -26,7 +26,7 @@ export type MessageSpec = Record<number, FieldSpec>
 export type PackedMessage = { mti: string; bytes: Buffer }
 export type UnpackedMessage = { mti: string; fields: Record<number, unknown>; bytesRead: number }
 
-export class Iso8583Codec {
+export class Iso8583 {
   private spec: MessageSpec
   private opts: Required<CodecOptions>
   private bitmapConstraint: BitmapConstraint = 64
