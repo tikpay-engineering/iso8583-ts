@@ -11,7 +11,10 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
-    "prepublishOnly": "npm run clean && npm run build"
+    "prepublishOnly": "npm run clean && npm run build",
+    "lint": "eslint 'src/**/*.{ts,tsx}'",
+    "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
+    "format": "prettier --write ."
   },
   "author": "Tikpay Pty Ltd",
   "license": "MIT",
@@ -21,11 +24,11 @@
     "@typescript-eslint/parser": "^8.41.0",
     "eslint": "^9.34.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "prettier": "^3.3.3",
+    "eslint-plugin-import": "^2.32.0",
+    "prettier": "^3.6.2",
     "typescript": "^5.9.2"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=18.18.0"
   }
 }
