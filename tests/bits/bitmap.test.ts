@@ -6,7 +6,7 @@ const hex = (b: Buffer) => b.toString('hex')
 
 describe('bitmap', () => {
   describe('buildBitmap', () => {
-    it('builds a primary-only bitmap (8 bytes) for DEs ≤ 64', () => {
+    it('builds a primary-only bitmap (8 bytes) for DEs <= 64', () => {
       const buf = buildBitmap([2, 3, 64], 64 as BitmapConstraint)
       expect(buf.length).toBe(8)
       expect(hex(buf)).toBe('6000000000000001')
@@ -62,16 +62,13 @@ describe('bitmap', () => {
     })
 
     it('parses a secondary-present bitmap (16 bytes) and filters bit 1 from the primary only', () => {
-      // Primary byte0: 0xC0 => 1100 0000 (bit1=secondary present, and DE2)
-      // Secondary first byte (9th overall): 0x80 => DE65
       const bm = Buffer.from('c0000000000000008000000000000000', 'hex')
       const present = parseBitmap(bm, 128 as BitmapConstraint)
-      // Expect DE2 and DE65; note it must NOT drop 65 (only primary bit 1 is filtered)
       expect(present).toEqual([2, 65])
     })
 
     it('throws when given 16 bytes under a 64-bit constraint', () => {
-      const bm16 = Buffer.alloc(16, 0)
+      const bm16 = Buffer.alloc(16)
       expect(() => parseBitmap(bm16, 64 as BitmapConstraint)).toThrow(/Secondary bitmap present/i)
     })
 
@@ -84,7 +81,7 @@ describe('bitmap', () => {
     it('round-trips with buildBitmap for primary-only sets', () => {
       const present = [2, 3, 4, 63, 64]
       const bm = buildBitmap(present, 64 as BitmapConstraint)
-      expect(hex(bm).length).toBe(16) // 8 bytes -> 16 hex chars
+      expect(hex(bm).length).toBe(16)
       const parsed = parseBitmap(bm, 64 as BitmapConstraint)
       expect(parsed).toEqual(present)
     })
@@ -92,7 +89,7 @@ describe('bitmap', () => {
     it('round-trips with buildBitmap when secondary is present', () => {
       const present = [2, 38, 65, 100, 128]
       const bm = buildBitmap(present, 128 as BitmapConstraint)
-      expect(hex(bm).length).toBe(32) // 16 bytes -> 32 hex chars
+      expect(hex(bm).length).toBe(32)
       const parsed = parseBitmap(bm, 128 as BitmapConstraint)
       expect(parsed).toEqual(present)
     })

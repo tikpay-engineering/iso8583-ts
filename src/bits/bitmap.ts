@@ -1,6 +1,6 @@
 import { BitmapConstraint, ERR } from '../internals/constants'
 
-export const buildBitmap = (present: readonly number[], constraint: BitmapConstraint): Buffer => {
+export const buildBitmap = (present: number[], constraint: BitmapConstraint): Buffer => {
   const needsSecondary = present.some(n => n > 64)
   if (constraint === 64 && needsSecondary) throw new Error(ERR.BITMAP_64_CONSTRAINT)
 
@@ -21,6 +21,7 @@ export const buildBitmap = (present: readonly number[], constraint: BitmapConstr
 export const parseBitmap = (bitmap: Buffer, constraint: BitmapConstraint): number[] => {
   if (bitmap.length !== 8 && bitmap.length !== 16) throw new Error(ERR.BITMAP_SIZE)
   if (constraint === 64 && bitmap.length === 16) throw new Error(ERR.SEC_BITMAP_CONSTRAINED)
+
   const present: number[] = []
   for (let i = 0; i < bitmap.length * 8; i++) {
     const byte = bitmap[Math.floor(i / 8)]
