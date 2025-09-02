@@ -37,8 +37,6 @@ jobs:
       - name: Typecheck & Build
         run: |
           npm run build
-          # To do explicit typecheck without emitting, add:
-          # npx tsc --noEmit
 
       - name: Test (Vitest with coverage)
         run: npm test
