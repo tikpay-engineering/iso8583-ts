@@ -1,8 +1,8 @@
-import { fromBcd, toBcd } from '../../src/internals/bcd'
-import { digitsOnly } from '../../src/internals/digits'
+import { fromBcd, toBcd } from '@internals/bcd'
+import { digitsOnly } from '@internals/digits'
 import { toHexBuffer } from '../utils'
 
-vi.mock('../../src/internals/digits', () => ({
+vi.mock('@internals/digits', () => ({
   digitsOnly: vi.fn(),
 }))
 

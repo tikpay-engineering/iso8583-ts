@@ -1,4 +1,4 @@
-import { digitsOnly } from '../../src/internals/digits'
+import { digitsOnly } from '@internals/digits'
 
 describe('digitsOnly', () => {
   it('throws if input is not a string of digits', () => {
