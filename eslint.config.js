@@ -7,7 +7,7 @@ export default [
     ignores: ['node_modules', 'dist', 'coverage'],
   },
   {
-    files: ['src/**/*.{ts,tsx}', 'tests/**/*.{ts,tsx}'],
+    files: ['src/**/*.ts', 'tests/**/*.ts'],
     languageOptions: {
       parser: tsParser,
       ecmaVersion: 'latest',
