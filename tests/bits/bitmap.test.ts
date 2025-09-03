@@ -1,27 +1,25 @@
-import { describe, expect, it } from 'vitest'
 import { buildBitmap, parseBitmap } from '../../src/bits/bitmap'
 import { BitmapConstraint } from '../../src/internals/constants'
-
-const hex = (b: Buffer) => b.toString('hex')
+import { toHex } from '../utils'
 
 describe('bitmap', () => {
   describe('buildBitmap', () => {
     it('builds a primary-only bitmap (8 bytes) for DEs <= 64', () => {
       const buf = buildBitmap([2, 3, 64], 64 as BitmapConstraint)
       expect(buf.length).toBe(8)
-      expect(hex(buf)).toBe('6000000000000001')
+      expect(toHex(buf)).toBe('6000000000000001')
     })
 
     it('is order-insensitive', () => {
       const a = buildBitmap([2, 3, 64], 64 as BitmapConstraint)
       const b = buildBitmap([64, 3, 2], 64 as BitmapConstraint)
-      expect(hex(a)).toBe(hex(b))
+      expect(toHex(a)).toBe(toHex(b))
     })
 
     it('sets secondary indicator and returns 16 bytes when any DE > 64', () => {
       const buf = buildBitmap([2, 65], 128 as BitmapConstraint)
       expect(buf.length).toBe(16)
-      expect(hex(buf)).toBe('c0000000000000008000000000000000')
+      expect(toHex(buf)).toBe('c0000000000000008000000000000000')
     })
 
     it('throws if constrained to 64 bits and a DE > 64 is present', () => {
@@ -81,7 +79,7 @@ describe('bitmap', () => {
     it('round-trips with buildBitmap for primary-only sets', () => {
       const present = [2, 3, 4, 63, 64]
       const bm = buildBitmap(present, 64 as BitmapConstraint)
-      expect(hex(bm).length).toBe(16)
+      expect(toHex(bm).length).toBe(16)
       const parsed = parseBitmap(bm, 64 as BitmapConstraint)
       expect(parsed).toEqual(present)
     })
@@ -89,7 +87,7 @@ describe('bitmap', () => {
     it('round-trips with buildBitmap when secondary is present', () => {
       const present = [2, 38, 65, 100, 128]
       const bm = buildBitmap(present, 128 as BitmapConstraint)
-      expect(hex(bm).length).toBe(32)
+      expect(toHex(bm).length).toBe(32)
       const parsed = parseBitmap(bm, 128 as BitmapConstraint)
       expect(parsed).toEqual(present)
     })
