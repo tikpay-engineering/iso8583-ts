@@ -1,0 +1,39 @@
+{
+  "name": "iso8583-ts",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "ISO 8583 parser written in TypeScript with LLVAR/LLLVAR enforcement and bitmap handling.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "lint": "eslint 'src/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' --fix",
+    "format": "prettier --write .",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
+  },
+  "author": "Tikpay Pty Ltd",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^9.34.0",
+    "eslint-plugin-import": "^2.32.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}

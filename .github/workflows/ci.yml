@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'tsconfig*.json'
+      - 'vitest.config.*'
+      - '.eslintrc.*'
+      - '.prettierrc*'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Typecheck & Build
+        run: |
+          npm run build
+
+      - name: Test (Vitest with coverage)
+        run: npm test
