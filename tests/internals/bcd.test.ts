@@ -39,6 +39,10 @@ describe('bcd', () => {
   })
 
   describe('fromBcd', () => {
+    it('throws if buffer contains non numeric characters', () => {
+      expect(() => fromBcd(toHexBuffer('ABCDEFGH'), 4)).toThrow(/Invalid BCD digit/)
+    })
+
     it('decodes when digits equals total length', () => {
       expect(fromBcd(toHexBuffer('1234567890'), 10)).toBe('1234567890')
     })
