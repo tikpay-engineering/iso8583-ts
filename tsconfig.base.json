@@ -15,6 +15,10 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "paths": {
+      "@bits/*": ["./src/bits/*"],
+      "@internals/*": ["./src/internals/*"]
+    }
   }
 }

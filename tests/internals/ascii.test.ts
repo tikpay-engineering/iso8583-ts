@@ -1,4 +1,4 @@
-import { readAscii } from '../../src/internals/ascii'
+import { readAscii } from '@internals/ascii'
 
 describe('ascii', () => {
   it('throws if extracted string length from buffer is less than given length', () => {

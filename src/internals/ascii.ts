@@ -1,4 +1,4 @@
-import { ERR } from './constants'
+import { ERR } from '@internals/constants'
 
 export const readAscii = (buf: Buffer, offset: number, len: number): string => {
   const slice = buf.subarray(offset, offset + len)

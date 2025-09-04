@@ -1,4 +1,4 @@
-import { digitsOnly } from './digits'
+import { digitsOnly } from '@internals/digits'
 
 export const fromBcd = (buf: Buffer, digits: number): string => {
   let s = ''

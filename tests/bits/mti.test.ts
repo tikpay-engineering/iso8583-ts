@@ -1,14 +1,14 @@
-import { assertMTI, decodeMTI, encodeMTI } from '../../src/bits/mti'
-import { readAscii } from '../../src/internals/ascii'
-import { fromBcd, toBcd } from '../../src/internals/bcd'
+import { assertMTI, decodeMTI, encodeMTI } from '@bits/mti'
+import { readAscii } from '@internals/ascii'
+import { fromBcd, toBcd } from '@internals/bcd'
 import { toAsciiBuffer, toHexBuffer } from '../utils'
 
-vi.mock('../../src/internals/bcd', () => ({
+vi.mock('@internals/bcd', () => ({
   toBcd: vi.fn(),
   fromBcd: vi.fn(),
 }))
 
-vi.mock('../../src/internals/ascii', () => ({
+vi.mock('@internals/ascii', () => ({
   readAscii: vi.fn(),
 }))
 

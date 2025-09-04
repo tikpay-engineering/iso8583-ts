@@ -1,5 +1,5 @@
-import { buildBitmap, parseBitmap } from '../../src/bits/bitmap'
-import { BitmapConstraint } from '../../src/internals/constants'
+import { buildBitmap, parseBitmap } from '@bits/bitmap'
+import { BitmapConstraint } from '@internals/constants'
 import { toHex } from '../utils'
 
 describe('bitmap', () => {
