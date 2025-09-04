@@ -1,11 +1,18 @@
 import { digitsOnly } from '@internals/digits'
+import { ERR } from './constants'
 
 export const fromBcd = (buf: Buffer, digits: number): string => {
   let s = ''
   for (let i = 0; i < buf.length; i++) {
-    const b = buf[i]
-    s += String((b >> 4) & 0x0f)
-    s += String(b & 0x0f)
+    const hi = (buf[i] >> 4) & 0x0f
+    const lo = buf[i] & 0x0f
+
+    if (hi > 9 || lo > 9) {
+      throw new Error(ERR.INVALID_BCD_DIGIT(buf[i]))
+    }
+
+    s += hi.toString()
+    s += lo.toString()
   }
   return s.slice(s.length - digits)
 }
