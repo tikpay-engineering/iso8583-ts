@@ -1,9 +1,10 @@
 import { decodeBinary, encodeBinary } from '@encodings/binary'
-import { BFormat } from '@internals/formats'
+import { BFormat, Kind } from '@internals/formats'
 
 describe('binary', () => {
   const de = 48
-  const format: BFormat = { kind: 'b', length: 4 }
+  const format: BFormat = { kind: Kind.Binary, length: 4 }
+
   describe('encodeBinary', () => {
     it('returns the same Buffer instance when length matches', () => {
       const buf = Buffer.from('ABCDEFFEDCBAABCD', 'hex')
