@@ -7,11 +7,11 @@ vi.mock('@internals/bcd', () => ({
   toBcd: vi.fn(),
 }))
 
-afterEach(() => {
-  vi.clearAllMocks()
-})
-
 describe('lengths', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('writeLenHeader', () => {
     const toBcdMocked = vi.mocked(toBcd)
     describe('ascii encoding', () => {

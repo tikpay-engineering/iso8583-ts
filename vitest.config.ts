@@ -7,6 +7,11 @@ export default defineConfig({
     environment: 'node',
     include: ['tests/**/*.{test,spec}.ts'],
     globals: true,
+    typecheck: {
+      enabled: true,
+      include: ['**/*.test.ts'],
+      ignoreSourceErrors: false,
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text'],

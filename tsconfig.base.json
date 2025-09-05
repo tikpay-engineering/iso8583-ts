@@ -18,7 +18,8 @@
     "noUnusedParameters": true,
     "paths": {
       "@bits/*": ["./src/bits/*"],
-      "@internals/*": ["./src/internals/*"]
+      "@internals/*": ["./src/internals/*"],
+      "@encodings/*": ["./src/encodings/*"]
     }
   }
 }

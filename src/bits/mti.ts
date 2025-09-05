@@ -1,7 +1,7 @@
-import { NumericEncoding } from '../formats'
-import { readAscii } from '../internals/ascii'
-import { fromBcd, toBcd } from '../internals/bcd'
-import { ERR, RE } from '../internals/constants'
+import { readAscii } from '@internals/ascii'
+import { fromBcd, toBcd } from '@internals/bcd'
+import { ERR, RE } from '@internals/constants'
+import { NumericEncoding } from '@internals/formats'
 
 type DecodedMti = { mti: string; read: number }
 
