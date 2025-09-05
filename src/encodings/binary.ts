@@ -5,7 +5,7 @@ type DecodeBinary = { value: Buffer; read: number }
 
 export const encodeBinary = (de: number, f: BFormat, value: Buffer | string): Buffer => {
   const expected = f.length
-  let payload
+  let payload: Buffer | string
   if (Buffer.isBuffer(value)) {
     payload = value
   } else {
