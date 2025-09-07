@@ -6,11 +6,11 @@ vi.mock('@internals/digits', () => ({
   digitsOnly: vi.fn(),
 }))
 
-afterEach(() => {
-  vi.clearAllMocks()
-})
-
 describe('bcd', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('toBcd', () => {
     it('encodes an even length digit string to BCD', () => {
       vi.mocked(digitsOnly).mockReturnValue('1234567890')

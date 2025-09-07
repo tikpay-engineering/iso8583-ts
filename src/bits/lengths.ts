@@ -1,6 +1,6 @@
 import { fromBcd, toBcd } from '@internals/bcd'
 import { ERR } from '@internals/constants'
-import { LenHeaderEncoding } from '../formats'
+import { LenHeaderEncoding } from '@internals/formats'
 
 type MaxDigits = 2 | 3
 type HeaderLenInfo = { len: number; read: number }
