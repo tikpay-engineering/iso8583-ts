@@ -1,15 +1,11 @@
-import { readLenHeader, writeLenHeader } from '@bits/lengths'
 import { decodeVar, encodeVar } from '@encodings/varlen'
 import { Kind, VarLenCount, VarLenHeaderEncoding, VarPayloadEncoding } from '@internals/formats'
-import { applyVarDefaults, buildPayload } from '@internals/varlen'
+import { applyVarDefaults, buildPayload, readLenHeader, writeLenHeader } from '@internals/varlen'
 import { toHexBuffer } from '../utils'
 
 vi.mock('@internals/varlen', () => ({
   applyVarDefaults: vi.fn(),
   buildPayload: vi.fn(),
-}))
-
-vi.mock('@bits/lengths', () => ({
   writeLenHeader: vi.fn(),
   readLenHeader: vi.fn(),
 }))

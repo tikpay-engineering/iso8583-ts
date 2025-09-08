@@ -1,8 +1,7 @@
-import { readLenHeader, writeLenHeader } from '@bits/lengths'
 import { fromBcd } from '@internals/bcd'
 import { ERR } from '@internals/constants'
 import { Kind, LLLVARFormat, LLVARFormat } from '@internals/formats'
-import { applyVarDefaults, buildPayload } from '@internals/varlen'
+import { applyVarDefaults, buildPayload, readLenHeader, writeLenHeader } from '@internals/varlen'
 
 type DecodeVar = { value: unknown; read: number }
 
