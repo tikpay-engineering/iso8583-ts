@@ -9,7 +9,7 @@ export const encodeVar = (de: number, f: LLVARFormat | LLLVARFormat, value: Buff
   const {
     payload: payloadEnc,
     lenHeader: headerEnc,
-    lenCounts: countMode,
+    lenCountMode: countMode,
     length: maxAllowed,
   } = applyVarDefaults(de, f)
 
@@ -27,12 +27,12 @@ export const encodeVar = (de: number, f: LLVARFormat | LLLVARFormat, value: Buff
 
 export const decodeVar = (de: number, f: LLVARFormat | LLLVARFormat, buf: Buffer, offset: number): DecodeVar => {
   const headerDigits = f.kind.startsWith('LLL') ? 3 : 2
-  const { payload: payloadEnc, lenHeader: headerEnc, lenCounts: countMode } = applyVarDefaults(de, f)
+  const { payload: payloadEnc, lenHeader: headerEnc, lenCountMode } = applyVarDefaults(de, f)
 
   const { len: hdrLenVal, read: hdrBytes } = readLenHeader(buf, offset, headerDigits, headerEnc)
 
   let byteLen: number
-  if (countMode === 'bytes') {
+  if (lenCountMode === 'bytes') {
     byteLen = hdrLenVal
   } else {
     byteLen = Math.ceil(hdrLenVal / 2)
@@ -44,7 +44,7 @@ export const decodeVar = (de: number, f: LLVARFormat | LLLVARFormat, buf: Buffer
   if (slice.length < byteLen) throw new Error(ERR.FIELD_UNDERRUN(de))
 
   if (payloadEnc === 'bcd-digits') {
-    const digitsStr = fromBcd(slice, countMode === 'digits' ? hdrLenVal : byteLen * 2)
+    const digitsStr = fromBcd(slice, lenCountMode === 'digits' ? hdrLenVal : byteLen * 2)
     return { value: digitsStr, read: hdrBytes + byteLen }
   }
 

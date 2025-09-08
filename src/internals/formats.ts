@@ -11,7 +11,7 @@ export enum VarPayloadEncoding {
   BINARY = 'binary',
   BCD_DIGITS = 'bcd-digits',
 }
-export enum VarLenCount {
+export enum VarLenCountMode {
   BYTES = 'bytes',
   DIGITS = 'digits',
 }
@@ -42,7 +42,7 @@ type VarBase = {
   length: number
   payload?: VarPayloadEncoding
   lenHeader?: VarLenHeaderEncoding
-  lenCounts?: VarLenCount
+  lenCountMode?: VarLenCountMode
 }
 
 export type LLVARFormat = { kind: Kind.LLVAR | Kind.LLVARn | Kind.LLVARan | Kind.LLVARans } & VarBase
@@ -50,4 +50,4 @@ export type LLVARFormat = { kind: Kind.LLVAR | Kind.LLVARn | Kind.LLVARan | Kind
 export type LLLVARFormat = { kind: Kind.LLLVAR | Kind.LLLVARn | Kind.LLLVARan | Kind.LLLVARans } & VarBase
 
 export type VARFormatRequired = (LLVARFormat | LLLVARFormat) &
-  Required<Pick<VarBase, 'payload' | 'lenHeader' | 'lenCounts'>>
+  Required<Pick<VarBase, 'payload' | 'lenHeader' | 'lenCountMode'>>

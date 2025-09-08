@@ -3,7 +3,7 @@ import {
   Kind,
   LLLVARFormat,
   LLVARFormat,
-  VarLenCount,
+  VarLenCountMode,
   VarLenHeaderEncoding,
   VarPayloadEncoding,
 } from '@internals/formats'
@@ -25,14 +25,14 @@ describe('varlen', () => {
       const ret = applyVarDefaults(12, {
         kind: Kind.LLVARn,
         length: 10,
-        lenCounts: VarLenCount.DIGITS,
+        lenCountMode: VarLenCountMode.DIGITS,
         lenHeader: VarLenHeaderEncoding.ASCII,
         payload: VarPayloadEncoding.ASCII,
       })
       expect(ret).toStrictEqual({
         kind: Kind.LLVARn,
         length: 10,
-        lenCounts: 'digits',
+        lenCountMode: 'digits',
         lenHeader: 'ascii',
         payload: 'ascii',
       })
@@ -73,15 +73,15 @@ describe('varlen', () => {
       })
     })
 
-    describe('lenCounts field', () => {
+    describe('lenCountMode field', () => {
       it('throws if lenCount is digits but VAR type is not numeric', () => {
         const cases: (LLVARFormat | LLLVARFormat)[] = [
-          { kind: Kind.LLVARan, length: 10, lenCounts: VarLenCount.DIGITS },
-          { kind: Kind.LLLVARans, length: 10, lenCounts: VarLenCount.DIGITS },
+          { kind: Kind.LLVARan, length: 10, lenCountMode: VarLenCountMode.DIGITS },
+          { kind: Kind.LLLVARans, length: 10, lenCountMode: VarLenCountMode.DIGITS },
         ]
 
         for (const input of cases) {
-          expect(() => applyVarDefaults(12, input)).toThrow(/invalid lenCounts=digits for non-n field/)
+          expect(() => applyVarDefaults(12, input)).toThrow(/invalid lenCountMode=digits for non-n field/)
         }
       })
       it('applies digits default length count mode for VARn', () => {
@@ -92,7 +92,7 @@ describe('varlen', () => {
 
         for (const input of cases) {
           const ret = applyVarDefaults(12, input)
-          expect(ret.lenCounts).toBe('digits')
+          expect(ret.lenCountMode).toBe('digits')
           expect(ret.kind).toBe(input.kind)
         }
       })
@@ -104,7 +104,7 @@ describe('varlen', () => {
 
         for (const input of cases) {
           const ret = applyVarDefaults(12, input)
-          expect(ret.lenCounts).toBe('bytes')
+          expect(ret.lenCountMode).toBe('bytes')
           expect(ret.kind).toBe(input.kind)
         }
       })

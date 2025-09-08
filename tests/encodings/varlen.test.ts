@@ -1,5 +1,5 @@
 import { decodeVar, encodeVar } from '@encodings/varlen'
-import { Kind, VarLenCount, VarLenHeaderEncoding, VarPayloadEncoding } from '@internals/formats'
+import { Kind, VarLenCountMode, VarLenHeaderEncoding, VarPayloadEncoding } from '@internals/formats'
 import { applyVarDefaults, buildPayload, readLenHeader, writeLenHeader } from '@internals/varlen'
 import { toHexBuffer } from '../utils'
 
@@ -29,7 +29,7 @@ describe('varlen', () => {
     it('throws if logical length > max', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARn,
-        lenCounts: VarLenCount.BYTES,
+        lenCountMode: VarLenCountMode.BYTES,
         length: 4,
         lenHeader: VarLenHeaderEncoding.BCD,
         payload: VarPayloadEncoding.ASCII,
@@ -48,7 +48,7 @@ describe('varlen', () => {
     it('calls writeLenHeader(6, 2, bcd) for LLVAR digits mode', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARn,
-        lenCounts: VarLenCount.DIGITS,
+        lenCountMode: VarLenCountMode.DIGITS,
         length: 12,
         lenHeader: VarLenHeaderEncoding.BCD,
         payload: VarPayloadEncoding.BCD_DIGITS,
@@ -66,7 +66,7 @@ describe('varlen', () => {
     it('calls writeLenHeader(6, 3, bcd) for LLLVAR digits mode', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLLVARn,
-        lenCounts: VarLenCount.DIGITS,
+        lenCountMode: VarLenCountMode.DIGITS,
         length: 999,
         lenHeader: VarLenHeaderEncoding.BCD,
         payload: VarPayloadEncoding.BCD_DIGITS,
@@ -84,7 +84,7 @@ describe('varlen', () => {
     it('calls writeLenHeader(6, 2, bcd) for LLVAR bytes mode', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARan,
-        lenCounts: VarLenCount.BYTES,
+        lenCountMode: VarLenCountMode.BYTES,
         length: 20,
         lenHeader: VarLenHeaderEncoding.BCD,
         payload: VarPayloadEncoding.ASCII,
@@ -104,7 +104,7 @@ describe('varlen', () => {
     it('returns ascii string decoded when countMode is bytes', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARan,
-        lenCounts: VarLenCount.BYTES,
+        lenCountMode: VarLenCountMode.BYTES,
         length: 16,
         lenHeader: VarLenHeaderEncoding.BCD,
         payload: VarPayloadEncoding.ASCII,
@@ -122,7 +122,7 @@ describe('varlen', () => {
     it('throws if buffer payload length is smaller than given length', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARn,
-        lenCounts: VarLenCount.BYTES,
+        lenCountMode: VarLenCountMode.BYTES,
         length: 16,
         lenHeader: VarLenHeaderEncoding.BCD,
         payload: VarPayloadEncoding.ASCII,
@@ -141,7 +141,7 @@ describe('varlen', () => {
     it('returns digits decoded (LLVAR digits mode + BCD payload)', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARn,
-        lenCounts: VarLenCount.DIGITS,
+        lenCountMode: VarLenCountMode.DIGITS,
         length: 16,
         lenHeader: VarLenHeaderEncoding.BCD,
         payload: VarPayloadEncoding.BCD_DIGITS,
@@ -159,7 +159,7 @@ describe('varlen', () => {
     it('returns digits decoded (LLVAR bytes mode + BCD payload)', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARn,
-        lenCounts: VarLenCount.BYTES,
+        lenCountMode: VarLenCountMode.BYTES,
         length: 16,
         lenHeader: VarLenHeaderEncoding.BCD,
         payload: VarPayloadEncoding.BCD_DIGITS,
@@ -174,7 +174,7 @@ describe('varlen', () => {
     it('returns string decoded (LLLVAR bytes mode + binary payload)', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLLVARn,
-        lenCounts: VarLenCount.BYTES,
+        lenCountMode: VarLenCountMode.BYTES,
         length: 16,
         lenHeader: VarLenHeaderEncoding.BCD,
         payload: VarPayloadEncoding.BINARY,
