@@ -6,11 +6,11 @@ import { NumericEncoding } from '@internals/formats'
 type DecodedMti = { mti: string; read: number }
 
 export const encodeMTI = (mti: string, enc: NumericEncoding): Buffer =>
-  enc === 'ascii' ? Buffer.from(mti, 'ascii') : toBcd(mti)
+  enc === NumericEncoding.ASCII ? Buffer.from(mti, 'ascii') : toBcd(mti)
 
 export const decodeMTI = (buf: Buffer, offset: number, enc: NumericEncoding): DecodedMti => {
-  const mti = enc === 'ascii' ? readAscii(buf, offset, 4) : fromBcd(buf.subarray(offset, offset + 2), 4)
-  return { mti, read: enc === 'ascii' ? 4 : 2 }
+  const mti = enc === NumericEncoding.ASCII ? readAscii(buf, offset, 4) : fromBcd(buf.subarray(offset, offset + 2), 4)
+  return { mti, read: enc === NumericEncoding.ASCII ? 4 : 2 }
 }
 
 export const assertMTI = (mti: string): void => {

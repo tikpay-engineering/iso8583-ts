@@ -11,12 +11,14 @@ export const ERR = {
   FIELD_BYTES: (de: number, expected: number) => `DE${de} must be ${expected} bytes`,
   FIELD_HEX_INVALID: (de: number) => `Invalid hex for DE${de}`,
   FIELD_EXCEEDS: (de: number, kind: Kind, len: number) => `DE${de} exceeds ${kind}${len}`,
+  FIELD_TOO_LONG: (de: number, value: number, max: number) => `DE${de} length ${value} > max ${max}`,
   FIELD_UNDERRUN: (de: number) => `DE${de} underrun`,
   INVALID_ALPHA: (fmt: Kind.Alpha | Kind.AlphaNumeric | Kind.AlphaNumericSpecial) =>
     `Value not valid for "${fmt}" field`,
   INVALID_ASCII_LEN: 'Invalid ASCII length header',
   INVALID_BCD_DIGIT: (b: number) => `Invalid BCD digit: 0x${b.toString(16).padStart(2, '0')}`,
   INVALID_MTI: (m: string) => `Invalid MTI "${m}" (expect 4 digits)`,
+  INVALID_VAR_DIGITS_FOR_NON_N: (de: number) => `DE${de} invalid lenCountMode=digits for non-n field`,
   LEN_HDR_UNDERRUN: 'Length header underrun',
   SEC_BITMAP_CONSTRAINED: 'Secondary bitmap present but constrained to 64',
 }
@@ -27,4 +29,5 @@ export const RE = {
   HEX: /^[0-9A-Fa-f]*$/,
   MTI: /^\d{4}$/,
   PRINT: /^[\x20-\x7E]*$/,
+  XPN: /^[CD]\d{16}$/,
 }
