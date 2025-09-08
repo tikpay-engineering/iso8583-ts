@@ -60,7 +60,7 @@ describe('varlen', () => {
       })
 
       encodeVar(12, { kind: Kind.LLVARn, length: 12, payload: VarPayloadEncoding.BCD_DIGITS }, '123456')
-      expect(writeLenHeaderMock).toHaveBeenCalledWith(6, 2, 'bcd')
+      expect(writeLenHeaderMock).toHaveBeenCalledWith(6, 2, VarLenHeaderEncoding.BCD)
     })
 
     it('calls writeLenHeader(6, 3, bcd) for LLLVAR digits mode', () => {
@@ -78,7 +78,7 @@ describe('varlen', () => {
       })
 
       encodeVar(12, { kind: Kind.LLLVARn, length: 999, payload: VarPayloadEncoding.BCD_DIGITS }, '123456')
-      expect(writeLenHeaderMock).toHaveBeenCalledWith(6, 3, 'bcd')
+      expect(writeLenHeaderMock).toHaveBeenCalledWith(6, 3, VarLenHeaderEncoding.BCD)
     })
 
     it('calls writeLenHeader(6, 2, bcd) for LLVAR bytes mode', () => {
@@ -96,7 +96,7 @@ describe('varlen', () => {
       })
 
       encodeVar(12, { kind: Kind.LLVARan, length: 20, payload: VarPayloadEncoding.ASCII }, '123456')
-      expect(writeLenHeaderMock).toHaveBeenCalledWith(6, 2, 'bcd')
+      expect(writeLenHeaderMock).toHaveBeenCalledWith(6, 2, VarLenHeaderEncoding.BCD)
     })
   })
 
@@ -167,7 +167,7 @@ describe('varlen', () => {
       const readLenHeaderMock = vi.mocked(readLenHeader).mockReturnValue({ len: 6, read: 1 })
       const buf = toHexBuffer('06123456789012')
       const ret = decodeVar(12, { kind: Kind.LLVARn, length: 16, payload: VarPayloadEncoding.BCD_DIGITS }, buf, 0)
-      expect(readLenHeaderMock).toHaveBeenCalledWith(buf, 0, 2, 'bcd')
+      expect(readLenHeaderMock).toHaveBeenCalledWith(buf, 0, 2, VarLenHeaderEncoding.BCD)
       expect(ret).toStrictEqual({ read: 7, value: '123456789012' })
     })
 
@@ -182,7 +182,7 @@ describe('varlen', () => {
       const readLenHeaderMock = vi.mocked(readLenHeader).mockReturnValue({ len: 6, read: 2 })
       const buf = toHexBuffer('0006123456789012')
       const ret = decodeVar(12, { kind: Kind.LLLVARn, length: 16, payload: VarPayloadEncoding.BINARY }, buf, 0)
-      expect(readLenHeaderMock).toHaveBeenCalledWith(buf, 0, 3, 'bcd')
+      expect(readLenHeaderMock).toHaveBeenCalledWith(buf, 0, 3, VarLenHeaderEncoding.BCD)
       expect(ret).toStrictEqual({ read: 8, value: toHexBuffer('123456789012') })
     })
   })

@@ -32,9 +32,9 @@ describe('varlen', () => {
       expect(ret).toStrictEqual({
         kind: Kind.LLVARn,
         length: 10,
-        lenCountMode: 'digits',
-        lenHeader: 'ascii',
-        payload: 'ascii',
+        lenCountMode: VarLenCountMode.DIGITS,
+        lenHeader: VarLenHeaderEncoding.ASCII,
+        payload: VarPayloadEncoding.ASCII,
       })
     })
 
@@ -47,7 +47,7 @@ describe('varlen', () => {
 
         for (const input of cases) {
           const ret = applyVarDefaults(12, input)
-          expect(ret.payload).toBe('bcd-digits')
+          expect(ret.payload).toBe(VarPayloadEncoding.BCD_DIGITS)
           expect(ret.kind).toBe(input.kind)
         }
       })
@@ -59,7 +59,7 @@ describe('varlen', () => {
 
         for (const input of cases) {
           const ret = applyVarDefaults(12, input)
-          expect(ret.payload).toBe('ascii')
+          expect(ret.payload).toBe(VarPayloadEncoding.ASCII)
           expect(ret.kind).toBe(input.kind)
         }
       })
@@ -68,7 +68,7 @@ describe('varlen', () => {
     describe('lenHeader field', () => {
       it('applies bcd default payload encoding type if lenHeader is not passed in', () => {
         const ret = applyVarDefaults(12, { kind: Kind.LLVARn as const, length: 10 })
-        expect(ret.lenHeader).toBe('bcd')
+        expect(ret.lenHeader).toBe(VarLenHeaderEncoding.BCD)
         expect(ret.kind).toBe(Kind.LLVARn)
       })
     })
@@ -92,7 +92,7 @@ describe('varlen', () => {
 
         for (const input of cases) {
           const ret = applyVarDefaults(12, input)
-          expect(ret.lenCountMode).toBe('digits')
+          expect(ret.lenCountMode).toBe(VarLenCountMode.DIGITS)
           expect(ret.kind).toBe(input.kind)
         }
       })
@@ -104,7 +104,7 @@ describe('varlen', () => {
 
         for (const input of cases) {
           const ret = applyVarDefaults(12, input)
-          expect(ret.lenCountMode).toBe('bytes')
+          expect(ret.lenCountMode).toBe(VarLenCountMode.BYTES)
           expect(ret.kind).toBe(input.kind)
         }
       })

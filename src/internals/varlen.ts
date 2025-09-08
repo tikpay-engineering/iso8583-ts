@@ -32,12 +32,12 @@ export const applyVarDefaults = (de: number, f: LLVARFormat | LLLVARFormat): VAR
 }
 
 export const buildPayload = (enc: VarPayloadEncoding, value: Buffer | string) => {
-  if (enc === 'ascii') {
+  if (enc === VarPayloadEncoding.ASCII) {
     const s = String(value)
     const payload = Buffer.from(s, 'ascii')
     return { payload, byteLen: payload.length, digitLen: 0 }
   }
-  if (enc === 'binary') {
+  if (enc === VarPayloadEncoding.BINARY) {
     const payload = Buffer.isBuffer(value) ? value : Buffer.from(String(value), 'hex')
     return { payload, byteLen: payload.length, digitLen: 0 }
   }
@@ -48,7 +48,7 @@ export const buildPayload = (enc: VarPayloadEncoding, value: Buffer | string) =>
 
 export const writeLenHeader = (len: number, digits: MaxDigits, enc: VarLenHeaderEncoding): Buffer => {
   const s = String(len).padStart(digits, '0')
-  return enc === 'ascii' ? Buffer.from(s, 'ascii') : toBcd(s)
+  return enc === VarLenHeaderEncoding.ASCII ? Buffer.from(s, 'ascii') : toBcd(s)
 }
 
 export const readLenHeader = (
@@ -57,7 +57,7 @@ export const readLenHeader = (
   digits: MaxDigits,
   enc: VarLenHeaderEncoding,
 ): HeaderLenInfo => {
-  if (enc === 'ascii') {
+  if (enc === VarLenHeaderEncoding.ASCII) {
     const slice = buf.subarray(offset, offset + digits)
     if (slice.length < digits) throw new Error(ERR.LEN_HDR_UNDERRUN)
     const n = Number(slice.toString('ascii'))
