@@ -1,12 +1,17 @@
 import { fromBcd } from '@internals/bcd'
 import { ERR } from '@internals/constants'
-import { Kind, LLLVARFormat, LLVARFormat } from '@internals/formats'
+import { LLLVARFormat, LLVARFormat } from '@internals/formats'
 import { applyVarDefaults, buildPayload, readLenHeader, writeLenHeader } from '@internals/varlen'
 
 type DecodeVar = { value: unknown; read: number }
 
 export const encodeVar = (de: number, f: LLVARFormat | LLLVARFormat, value: Buffer | string): Buffer => {
-  const { payload: payloadEnc, lenHeader: headerEnc, lenCounts: countMode, length: maxAllowed } = applyVarDefaults(f)
+  const {
+    payload: payloadEnc,
+    lenHeader: headerEnc,
+    lenCounts: countMode,
+    length: maxAllowed,
+  } = applyVarDefaults(de, f)
 
   const { payload, byteLen, digitLen } = buildPayload(payloadEnc, value)
 
@@ -22,7 +27,7 @@ export const encodeVar = (de: number, f: LLVARFormat | LLLVARFormat, value: Buff
 
 export const decodeVar = (de: number, f: LLVARFormat | LLLVARFormat, buf: Buffer, offset: number): DecodeVar => {
   const headerDigits = f.kind.startsWith('LLL') ? 3 : 2
-  const { payload: payloadEnc, lenHeader: headerEnc, lenCounts: countMode } = applyVarDefaults(f)
+  const { payload: payloadEnc, lenHeader: headerEnc, lenCounts: countMode } = applyVarDefaults(de, f)
 
   const { len: hdrLenVal, read: hdrBytes } = readLenHeader(buf, offset, headerDigits, headerEnc)
 
@@ -30,9 +35,6 @@ export const decodeVar = (de: number, f: LLVARFormat | LLLVARFormat, buf: Buffer
   if (countMode === 'bytes') {
     byteLen = hdrLenVal
   } else {
-    if (![Kind.LLVARn, Kind.LLLVARn].includes(f.kind)) {
-      throw new Error(ERR.INVALID_VAR_DIGITS_FOR_NON_N(de))
-    }
     byteLen = Math.ceil(hdrLenVal / 2)
   }
 

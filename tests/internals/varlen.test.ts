@@ -1,5 +1,12 @@
 import { fromBcd, toBcd } from '@internals/bcd'
-import { Kind, VarLenCount, VarLenHeaderEncoding, VarPayloadEncoding } from '@internals/formats'
+import {
+  Kind,
+  LLLVARFormat,
+  LLVARFormat,
+  VarLenCount,
+  VarLenHeaderEncoding,
+  VarPayloadEncoding,
+} from '@internals/formats'
 import { applyVarDefaults, buildPayload, readLenHeader, writeLenHeader } from '@internals/varlen'
 import { toAsciiBuffer, toHex, toHexBuffer } from '../utils'
 
@@ -15,7 +22,7 @@ describe('varlen', () => {
 
   describe('applyVarDefaults', () => {
     it('applies given values correctly', () => {
-      const ret = applyVarDefaults({
+      const ret = applyVarDefaults(12, {
         kind: Kind.LLVARn,
         length: 10,
         lenCounts: VarLenCount.DIGITS,
@@ -39,7 +46,7 @@ describe('varlen', () => {
         ]
 
         for (const input of cases) {
-          const ret = applyVarDefaults(input)
+          const ret = applyVarDefaults(12, input)
           expect(ret.payload).toBe('bcd-digits')
           expect(ret.kind).toBe(input.kind)
         }
@@ -51,7 +58,7 @@ describe('varlen', () => {
         ]
 
         for (const input of cases) {
-          const ret = applyVarDefaults(input)
+          const ret = applyVarDefaults(12, input)
           expect(ret.payload).toBe('ascii')
           expect(ret.kind).toBe(input.kind)
         }
@@ -60,33 +67,43 @@ describe('varlen', () => {
 
     describe('lenHeader field', () => {
       it('applies bcd default payload encoding type if lenHeader is not passed in', () => {
-        const ret = applyVarDefaults({ kind: Kind.LLVARn as const, length: 10 })
+        const ret = applyVarDefaults(12, { kind: Kind.LLVARn as const, length: 10 })
         expect(ret.lenHeader).toBe('bcd')
         expect(ret.kind).toBe(Kind.LLVARn)
       })
     })
 
     describe('lenCounts field', () => {
-      it('applies digits default length count mode for VARn', () => {
-        const cases = [
-          { kind: Kind.LLVARn as const, length: 10 },
-          { kind: Kind.LLLVARn as const, length: 10 },
+      it('throws if lenCount is digits but VAR type is not numeric', () => {
+        const cases: (LLVARFormat | LLLVARFormat)[] = [
+          { kind: Kind.LLVARan, length: 10, lenCounts: VarLenCount.DIGITS },
+          { kind: Kind.LLLVARans, length: 10, lenCounts: VarLenCount.DIGITS },
         ]
 
         for (const input of cases) {
-          const ret = applyVarDefaults(input)
+          expect(() => applyVarDefaults(12, input)).toThrow(/invalid lenCounts=digits for non-n field/)
+        }
+      })
+      it('applies digits default length count mode for VARn', () => {
+        const cases: (LLVARFormat | LLLVARFormat)[] = [
+          { kind: Kind.LLVARn, length: 10 },
+          { kind: Kind.LLLVARn, length: 10 },
+        ]
+
+        for (const input of cases) {
+          const ret = applyVarDefaults(12, input)
           expect(ret.lenCounts).toBe('digits')
           expect(ret.kind).toBe(input.kind)
         }
       })
       it('applies bytes defaultlength count mode for types other than VARn', () => {
-        const cases = [
-          { kind: Kind.LLVARan as const, length: 10 },
-          { kind: Kind.LLLVARan as const, length: 10 },
+        const cases: (LLVARFormat | LLLVARFormat)[] = [
+          { kind: Kind.LLVARan, length: 10 },
+          { kind: Kind.LLLVARan, length: 10 },
         ]
 
         for (const input of cases) {
-          const ret = applyVarDefaults(input)
+          const ret = applyVarDefaults(12, input)
           expect(ret.lenCounts).toBe('bytes')
           expect(ret.kind).toBe(input.kind)
         }

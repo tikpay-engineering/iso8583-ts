@@ -119,25 +119,6 @@ describe('varlen', () => {
       expect(ret).toStrictEqual({ read: 8, value: '123ABC' })
     })
 
-    it('throws if countMode is digits for non numeric only VAR buffers', () => {
-      vi.mocked(applyVarDefaults).mockReturnValue({
-        kind: Kind.LLVARan,
-        lenCounts: VarLenCount.DIGITS,
-        length: 16,
-        lenHeader: VarLenHeaderEncoding.BCD,
-        payload: VarPayloadEncoding.ASCII,
-      })
-      vi.mocked(readLenHeader).mockReturnValue({ len: 6, read: 2 })
-      expect(() =>
-        decodeVar(
-          12,
-          { kind: Kind.LLVARan, length: 16, payload: VarPayloadEncoding.ASCII },
-          toHexBuffer('3036313233414243'),
-          0,
-        ),
-      ).toThrow(/invalid lenCounts=digits for non-n field/)
-    })
-
     it('throws if buffer payload length is smaller than given length', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARn,

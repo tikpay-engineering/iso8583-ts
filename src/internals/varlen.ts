@@ -13,9 +13,12 @@ import {
 type MaxDigits = 2 | 3
 type HeaderLenInfo = { len: number; read: number }
 
-export const applyVarDefaults = (f: LLVARFormat | LLLVARFormat): VARFormatRequired => {
+export const applyVarDefaults = (de: number, f: LLVARFormat | LLLVARFormat): VARFormatRequired => {
   const kind = f.kind
   const isNumericVar = [Kind.LLVARn, Kind.LLLVARn].includes(kind)
+
+  if (f.lenCounts === VarLenCount.DIGITS && !isNumericVar) throw new Error(ERR.INVALID_VAR_DIGITS_FOR_NON_N(de))
+
   const payload = f.payload ?? (isNumericVar ? VarPayloadEncoding.BCD_DIGITS : VarPayloadEncoding.ASCII)
   const lenHeader = f.lenHeader ?? VarLenHeaderEncoding.BCD
   const lenCounts = f.lenCounts ?? (isNumericVar ? VarLenCount.DIGITS : VarLenCount.BYTES)
