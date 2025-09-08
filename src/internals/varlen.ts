@@ -1,12 +1,20 @@
 import { toBcd } from './bcd'
-import { Kind, LLLVARFormat, LLVARFormat, VarEncoding, VARFormatRequired } from './formats'
+import {
+  Kind,
+  LLLVARFormat,
+  LLVARFormat,
+  VARFormatRequired,
+  VarLenCount,
+  VarLenHeaderEncoding,
+  VarPayloadEncoding,
+} from './formats'
 
 export const applyVarDefaults = (f: LLVARFormat | LLLVARFormat): VARFormatRequired => {
   const kind = f.kind
   const isNumericVar = [Kind.LLVARn, Kind.LLLVARn].includes(kind)
-  const payload = f.payload ?? (isNumericVar ? 'bcd-digits' : 'ascii')
-  const lenHeader = f.lenHeader ?? 'bcd'
-  const lenCounts = f.lenCounts ?? (isNumericVar ? 'digits' : 'bytes')
+  const payload = f.payload ?? (isNumericVar ? VarPayloadEncoding.BCD_DIGITS : VarPayloadEncoding.ASCII)
+  const lenHeader = f.lenHeader ?? VarLenHeaderEncoding.BCD
+  const lenCounts = f.lenCounts ?? (isNumericVar ? VarLenCount.DIGITS : VarLenCount.BYTES)
 
   return {
     ...f,
@@ -16,7 +24,7 @@ export const applyVarDefaults = (f: LLVARFormat | LLLVARFormat): VARFormatRequir
   }
 }
 
-export const buildPayload = (enc: VarEncoding, value: Buffer | string) => {
+export const buildPayload = (enc: VarPayloadEncoding, value: Buffer | string) => {
   if (enc === 'ascii') {
     const s = String(value)
     const payload = Buffer.from(s, 'ascii')

@@ -1,11 +1,11 @@
 import { fromBcd, toBcd } from '@internals/bcd'
 import { ERR } from '@internals/constants'
-import { LenHeaderEncoding } from '@internals/formats'
+import { VarLenHeaderEncoding } from '@internals/formats'
 
 type MaxDigits = 2 | 3
 type HeaderLenInfo = { len: number; read: number }
 
-export const writeLenHeader = (len: number, digits: MaxDigits, enc: LenHeaderEncoding): Buffer => {
+export const writeLenHeader = (len: number, digits: MaxDigits, enc: VarLenHeaderEncoding): Buffer => {
   const s = String(len).padStart(digits, '0')
   return enc === 'ascii' ? Buffer.from(s, 'ascii') : toBcd(s)
 }
@@ -14,7 +14,7 @@ export const readLenHeader = (
   buf: Buffer,
   offset: number,
   digits: MaxDigits,
-  enc: LenHeaderEncoding,
+  enc: VarLenHeaderEncoding,
 ): HeaderLenInfo => {
   if (enc === 'ascii') {
     const slice = buf.subarray(offset, offset + digits)

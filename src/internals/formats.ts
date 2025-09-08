@@ -1,7 +1,20 @@
-export type NumericEncoding = 'bcd' | 'ascii'
-export type LenHeaderEncoding = 'bcd' | 'ascii'
-export type VarEncoding = 'ascii' | 'binary' | 'bcd-digits'
-export type VarLenCount = 'bytes' | 'digits'
+export enum NumericEncoding {
+  ASCII = 'ascii',
+  BCD = 'bcd',
+}
+export enum VarLenHeaderEncoding {
+  ASCII = 'ascii',
+  BCD = 'bcd',
+}
+export enum VarPayloadEncoding {
+  ASCII = 'ascii',
+  BINARY = 'binary',
+  BCD_DIGITS = 'bcd-digits',
+}
+export enum VarLenCount {
+  BYTES = 'bytes',
+  DIGITS = 'digits',
+}
 
 export enum Kind {
   Alpha = 'a',
@@ -27,8 +40,8 @@ export type NFormat = { kind: Kind.Numeric; length: number; encoding?: NumericEn
 
 type VarBase = {
   length: number
-  payload?: VarEncoding
-  lenHeader?: LenHeaderEncoding
+  payload?: VarPayloadEncoding
+  lenHeader?: VarLenHeaderEncoding
   lenCounts?: VarLenCount
 }
 

@@ -1,5 +1,5 @@
 import { toBcd } from '@internals/bcd'
-import { Kind } from '@internals/formats'
+import { Kind, VarLenCount, VarLenHeaderEncoding, VarPayloadEncoding } from '@internals/formats'
 import { applyVarDefaults, buildPayload } from '@internals/varlen'
 import { toAsciiBuffer, toHexBuffer } from '../utils'
 
@@ -17,9 +17,9 @@ describe('varlen', () => {
       const ret = applyVarDefaults({
         kind: Kind.LLVARn,
         length: 10,
-        lenCounts: 'digits',
-        lenHeader: 'ascii',
-        payload: 'ascii',
+        lenCounts: VarLenCount.DIGITS,
+        lenHeader: VarLenHeaderEncoding.ASCII,
+        payload: VarPayloadEncoding.ASCII,
       })
       expect(ret).toStrictEqual({
         kind: Kind.LLVARn,
@@ -96,7 +96,7 @@ describe('varlen', () => {
   describe('buildPayload', () => {
     describe('ascii', () => {
       it('builds ascii payload when encoding is ascii', () => {
-        const ret = buildPayload('ascii', 'ABCD1234')
+        const ret = buildPayload(VarPayloadEncoding.ASCII, 'ABCD1234')
         const retBuf = toAsciiBuffer('ABCD1234')
         expect(ret).toStrictEqual({ payload: retBuf, byteLen: retBuf.length, digitLen: 0 })
       })
@@ -104,13 +104,13 @@ describe('varlen', () => {
 
     describe('binary', () => {
       it('builds binary payload when encoding is binary and hex string is passed in', () => {
-        const ret = buildPayload('binary', 'abcd1234')
+        const ret = buildPayload(VarPayloadEncoding.BINARY, 'abcd1234')
         const retBuf = toHexBuffer('abcd1234')
         expect(ret).toStrictEqual({ payload: retBuf, byteLen: retBuf.length, digitLen: 0 })
       })
       it('builds binary payload when encoding is binary and a buffer is passed in', () => {
         const retBuf = toHexBuffer('ab12')
-        const ret = buildPayload('binary', retBuf)
+        const ret = buildPayload(VarPayloadEncoding.BINARY, retBuf)
         expect(ret).toStrictEqual({ payload: retBuf, byteLen: retBuf.length, digitLen: 0 })
       })
     })
@@ -119,7 +119,7 @@ describe('varlen', () => {
       it('builds bcd encoded payload', () => {
         const hexBuffer = toHexBuffer('123456')
         const toBcdMock = vi.mocked(toBcd).mockReturnValue(hexBuffer)
-        const ret = buildPayload('bcd-digits', '123456')
+        const ret = buildPayload(VarPayloadEncoding.BCD_DIGITS, '123456')
         expect(toBcdMock).toHaveBeenCalledTimes(1)
         expect(toBcdMock).toHaveBeenCalledWith('123456')
         expect(ret).toStrictEqual({ payload: hexBuffer, byteLen: hexBuffer.length, digitLen: 6 })

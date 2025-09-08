@@ -1,6 +1,6 @@
 import { readLenHeader, writeLenHeader } from '@bits/lengths'
 import { decodeVar, encodeVar } from '@encodings/varlen'
-import { Kind } from '@internals/formats'
+import { Kind, VarLenCount, VarLenHeaderEncoding, VarPayloadEncoding } from '@internals/formats'
 import { applyVarDefaults, buildPayload } from '@internals/varlen'
 import { toHexBuffer } from '../utils'
 
@@ -33,10 +33,10 @@ describe('varlen', () => {
     it('throws if logical length > max', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARn,
-        lenCounts: 'bytes',
+        lenCounts: VarLenCount.BYTES,
         length: 4,
-        lenHeader: 'bcd',
-        payload: 'ascii',
+        lenHeader: VarLenHeaderEncoding.BCD,
+        payload: VarPayloadEncoding.ASCII,
       })
       buildPayloadMock.mockReturnValue({
         payload: Buffer.from('ABCDE', 'ascii'),
@@ -44,16 +44,18 @@ describe('varlen', () => {
         digitLen: 0,
       })
 
-      expect(() => encodeVar(12, { kind: Kind.LLVARn, length: 4, payload: 'ascii' }, 'ABCDE')).toThrow(/max/i)
+      expect(() => encodeVar(12, { kind: Kind.LLVARn, length: 4, payload: VarPayloadEncoding.ASCII }, 'ABCDE')).toThrow(
+        /max/i,
+      )
     })
 
     it('calls writeLenHeader(6, 2, bcd) for LLVAR digits mode', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARn,
-        lenCounts: 'digits',
+        lenCounts: VarLenCount.DIGITS,
         length: 12,
-        lenHeader: 'bcd',
-        payload: 'bcd-digits',
+        lenHeader: VarLenHeaderEncoding.BCD,
+        payload: VarPayloadEncoding.BCD_DIGITS,
       })
       buildPayloadMock.mockReturnValue({
         payload: Buffer.from([0x12, 0x34, 0x56]),
@@ -61,17 +63,17 @@ describe('varlen', () => {
         digitLen: 6,
       })
 
-      encodeVar(12, { kind: Kind.LLVARn, length: 12, payload: 'bcd-digits' }, '123456')
+      encodeVar(12, { kind: Kind.LLVARn, length: 12, payload: VarPayloadEncoding.BCD_DIGITS }, '123456')
       expect(writeLenHeaderMock).toHaveBeenCalledWith(6, 2, 'bcd')
     })
 
     it('calls writeLenHeader(6, 3, bcd) for LLLVAR digits mode', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLLVARn,
-        lenCounts: 'digits',
+        lenCounts: VarLenCount.DIGITS,
         length: 999,
-        lenHeader: 'bcd',
-        payload: 'bcd-digits',
+        lenHeader: VarLenHeaderEncoding.BCD,
+        payload: VarPayloadEncoding.BCD_DIGITS,
       })
       buildPayloadMock.mockReturnValue({
         payload: Buffer.from([0x12, 0x34, 0x56]),
@@ -79,17 +81,17 @@ describe('varlen', () => {
         digitLen: 6,
       })
 
-      encodeVar(12, { kind: Kind.LLLVARn, length: 999, payload: 'bcd-digits' }, '123456')
+      encodeVar(12, { kind: Kind.LLLVARn, length: 999, payload: VarPayloadEncoding.BCD_DIGITS }, '123456')
       expect(writeLenHeaderMock).toHaveBeenCalledWith(6, 3, 'bcd')
     })
 
     it('calls writeLenHeader(6, 2, bcd) for LLVAR bytes mode', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARan,
-        lenCounts: 'bytes',
+        lenCounts: VarLenCount.BYTES,
         length: 20,
-        lenHeader: 'bcd',
-        payload: 'ascii',
+        lenHeader: VarLenHeaderEncoding.BCD,
+        payload: VarPayloadEncoding.ASCII,
       })
       buildPayloadMock.mockReturnValue({
         payload: Buffer.from('123456', 'ascii'),
@@ -97,7 +99,7 @@ describe('varlen', () => {
         digitLen: 0,
       })
 
-      encodeVar(12, { kind: Kind.LLVARan, length: 20, payload: 'ascii' }, '123456')
+      encodeVar(12, { kind: Kind.LLVARan, length: 20, payload: VarPayloadEncoding.ASCII }, '123456')
       expect(writeLenHeaderMock).toHaveBeenCalledWith(6, 2, 'bcd')
     })
   })
@@ -106,15 +108,15 @@ describe('varlen', () => {
     it('returns ascii string decoded when countMode is bytes', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARan,
-        lenCounts: 'bytes',
+        lenCounts: VarLenCount.BYTES,
         length: 16,
-        lenHeader: 'bcd',
-        payload: 'ascii',
+        lenHeader: VarLenHeaderEncoding.BCD,
+        payload: VarPayloadEncoding.ASCII,
       })
       vi.mocked(readLenHeader).mockReturnValue({ len: 6, read: 2 })
       const ret = decodeVar(
         12,
-        { kind: Kind.LLVARan, length: 16, payload: 'ascii' },
+        { kind: Kind.LLVARan, length: 16, payload: VarPayloadEncoding.ASCII },
         toHexBuffer('3036313233414243'),
         0,
       )
@@ -124,55 +126,70 @@ describe('varlen', () => {
     it('throws if countMode is digits for non numeric only VAR buffers', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARan,
-        lenCounts: 'digits',
+        lenCounts: VarLenCount.DIGITS,
         length: 16,
-        lenHeader: 'bcd',
-        payload: 'ascii',
+        lenHeader: VarLenHeaderEncoding.BCD,
+        payload: VarPayloadEncoding.ASCII,
       })
       vi.mocked(readLenHeader).mockReturnValue({ len: 6, read: 2 })
       expect(() =>
-        decodeVar(12, { kind: Kind.LLVARan, length: 16, payload: 'ascii' }, toHexBuffer('3036313233414243'), 0),
+        decodeVar(
+          12,
+          { kind: Kind.LLVARan, length: 16, payload: VarPayloadEncoding.ASCII },
+          toHexBuffer('3036313233414243'),
+          0,
+        ),
       ).toThrow(/invalid lenCounts=digits for non-n field/)
     })
 
     it('throws if buffer payload length is smaller than given length', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARn,
-        lenCounts: 'bytes',
+        lenCounts: VarLenCount.BYTES,
         length: 16,
-        lenHeader: 'bcd',
-        payload: 'ascii',
+        lenHeader: VarLenHeaderEncoding.BCD,
+        payload: VarPayloadEncoding.ASCII,
       })
       vi.mocked(readLenHeader).mockReturnValue({ len: 6, read: 2 })
       expect(() =>
-        decodeVar(12, { kind: Kind.LLVARn, length: 16, payload: 'ascii' }, toHexBuffer('303631323341'), 0),
+        decodeVar(
+          12,
+          { kind: Kind.LLVARn, length: 16, payload: VarPayloadEncoding.ASCII },
+          toHexBuffer('303631323341'),
+          0,
+        ),
       ).toThrow(/underrun/)
     })
 
     it('returns digits decoded (LLVAR digits mode + BCD payload)', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARn,
-        lenCounts: 'digits',
+        lenCounts: VarLenCount.DIGITS,
         length: 16,
-        lenHeader: 'bcd',
-        payload: 'bcd-digits',
+        lenHeader: VarLenHeaderEncoding.BCD,
+        payload: VarPayloadEncoding.BCD_DIGITS,
       })
       vi.mocked(readLenHeader).mockReturnValue({ len: 6, read: 1 })
-      const ret = decodeVar(12, { kind: Kind.LLVARn, length: 16, payload: 'bcd-digits' }, toHexBuffer('06123456'), 0)
+      const ret = decodeVar(
+        12,
+        { kind: Kind.LLVARn, length: 16, payload: VarPayloadEncoding.BCD_DIGITS },
+        toHexBuffer('06123456'),
+        0,
+      )
       expect(ret).toStrictEqual({ read: 4, value: '123456' })
     })
 
     it('returns digits decoded (LLVAR bytes mode + BCD payload)', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLVARn,
-        lenCounts: 'bytes',
+        lenCounts: VarLenCount.BYTES,
         length: 16,
-        lenHeader: 'bcd',
-        payload: 'bcd-digits',
+        lenHeader: VarLenHeaderEncoding.BCD,
+        payload: VarPayloadEncoding.BCD_DIGITS,
       })
       const readLenHeaderMock = vi.mocked(readLenHeader).mockReturnValue({ len: 6, read: 1 })
       const buf = toHexBuffer('06123456789012')
-      const ret = decodeVar(12, { kind: Kind.LLVARn, length: 16, payload: 'bcd-digits' }, buf, 0)
+      const ret = decodeVar(12, { kind: Kind.LLVARn, length: 16, payload: VarPayloadEncoding.BCD_DIGITS }, buf, 0)
       expect(readLenHeaderMock).toHaveBeenCalledWith(buf, 0, 2, 'bcd')
       expect(ret).toStrictEqual({ read: 7, value: '123456789012' })
     })
@@ -180,14 +197,14 @@ describe('varlen', () => {
     it('returns string decoded (LLLVAR bytes mode + binary payload)', () => {
       vi.mocked(applyVarDefaults).mockReturnValue({
         kind: Kind.LLLVARn,
-        lenCounts: 'bytes',
+        lenCounts: VarLenCount.BYTES,
         length: 16,
-        lenHeader: 'bcd',
-        payload: 'binary',
+        lenHeader: VarLenHeaderEncoding.BCD,
+        payload: VarPayloadEncoding.BINARY,
       })
       const readLenHeaderMock = vi.mocked(readLenHeader).mockReturnValue({ len: 6, read: 2 })
       const buf = toHexBuffer('0006123456789012')
-      const ret = decodeVar(12, { kind: Kind.LLLVARn, length: 16, payload: 'binary' }, buf, 0)
+      const ret = decodeVar(12, { kind: Kind.LLLVARn, length: 16, payload: VarPayloadEncoding.BINARY }, buf, 0)
       expect(readLenHeaderMock).toHaveBeenCalledWith(buf, 0, 3, 'bcd')
       expect(ret).toStrictEqual({ read: 8, value: toHexBuffer('123456789012') })
     })
