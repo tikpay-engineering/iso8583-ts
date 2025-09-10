@@ -1,6 +1,6 @@
 {
   "name": "@tikpay/iso8583-ts",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "ISO 8583 parser written in TypeScript with LLVAR/LLLVAR enforcement and bitmap handling.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
