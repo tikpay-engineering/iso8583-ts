@@ -4,7 +4,6 @@ import { NFormat, NumericEncoding } from '@internals/formats'
 
 type NumericReturn = { value: string; read: number }
 
-/** @internal */
 export const encodeNumeric = (f: NFormat, value: string | number): Buffer => {
   const enc = f.encoding ?? NumericEncoding.BCD
   let s = digitsOnly(String(value)).padStart(f.length, '0')
@@ -13,7 +12,6 @@ export const encodeNumeric = (f: NFormat, value: string | number): Buffer => {
   return toBcd(s)
 }
 
-/** @internal */
 export const decodeNumeric = (f: NFormat, buf: Buffer, offset: number): NumericReturn => {
   const enc = f.encoding ?? NumericEncoding.BCD
   if (enc === NumericEncoding.ASCII) {

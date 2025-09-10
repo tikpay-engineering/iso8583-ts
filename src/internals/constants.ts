@@ -1,9 +1,7 @@
 import { Kind } from './formats'
 
-/** @internal */
 export type BitmapConstraint = 64 | 128
 
-/** @internal */
 export const ERR = {
   ASCII_UNDERRUN: 'ASCII underrun',
   BITMAP_64_CONSTRAINT: 'Bitmap constrained to 64 bits but DE>64 present',
@@ -34,7 +32,6 @@ export const ERR = {
   UNSUPPORTED: (k: string) => `Unsupported format ${k}`,
 }
 
-/** @internal */
 export const RE = {
   ALPHA: /^[A-Za-z]*$/,
   ALNUM: /^[A-Za-z0-9]*$/,

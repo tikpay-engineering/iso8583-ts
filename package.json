@@ -1,14 +1,46 @@
 {
-  "name": "iso8583-ts",
+  "name": "@tikpay/iso8583-ts",
   "version": "0.0.1",
   "description": "ISO 8583 parser written in TypeScript with LLVAR/LLLVAR enforcement and bitmap handling.",
-  "main": "dist/iso8583.js",
-  "types": "dist/iso8583.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    }
+  },
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tikpay-engineering/iso8583-ts.git"
+  },
+  "keywords": [
+    "iso8583",
+    "payments",
+    "llvar",
+    "lllvar",
+    "emv",
+    "bcd",
+    "typescript"
+  ],
+  "author": "Tikpay Pty Ltd",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.18.0"
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsup",
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build",
@@ -19,8 +51,6 @@
     "test:int": "vitest run --project integration",
     "snap:update": "vitest -u"
   },
-  "author": "Tikpay Pty Ltd",
-  "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.18.0",
     "@typescript-eslint/eslint-plugin": "^8.41.0",
@@ -29,11 +59,9 @@
     "eslint": "^9.34.0",
     "eslint-plugin-import": "^2.32.0",
     "prettier": "^3.6.2",
+    "tsup": "^8.5.0",
     "typescript": "^5.9.2",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
-  },
-  "engines": {
-    "node": ">=18.18.0"
   }
 }
