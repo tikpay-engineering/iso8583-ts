@@ -12,8 +12,8 @@
 </div>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/iso8583-ts">
-    <img alt="npm" src="https://img.shields.io/npm/v/iso8583-ts.svg?logo=npm&color=cb3837">
+  <a href="https://www.npmjs.com/package/@tikpay/iso8583-ts">
+    <img alt="npm" src="https://img.shields.io/npm/v/@tikpay/iso8583-ts.svg?logo=npm&color=cb3837">
   </a>
   <a href="https://github.com/tikpay-engineering/iso8583-ts/actions">
     <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/tikpay-engineering/iso8583-ts/ci.yml?logo=github&label=CI">
