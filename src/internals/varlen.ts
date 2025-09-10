@@ -14,7 +14,6 @@ import {
 type MaxDigits = 2 | 3
 type HeaderLenInfo = { len: number; read: number }
 
-/** @internal */
 export const applyVarDefaults = (de: number, f: LLVARFormat | LLLVARFormat): VARFormatRequired => {
   const kind = f.kind
   const isNumericVar = [Kind.LLVARn, Kind.LLLVARn].includes(kind)
@@ -33,7 +32,6 @@ export const applyVarDefaults = (de: number, f: LLVARFormat | LLLVARFormat): VAR
   }
 }
 
-/** @internal */
 export const buildPayload = (enc: VarPayloadEncoding, value: Buffer | string) => {
   if (enc === VarPayloadEncoding.ASCII) {
     const s = String(value)
@@ -49,13 +47,11 @@ export const buildPayload = (enc: VarPayloadEncoding, value: Buffer | string) =>
   return { payload, byteLen: payload.length, digitLen: digits.length }
 }
 
-/** @internal */
 export const writeLenHeader = (len: number, digits: MaxDigits, enc: VarLenHeaderEncoding): Buffer => {
   const s = String(len).padStart(digits, '0')
   return enc === VarLenHeaderEncoding.ASCII ? Buffer.from(s, 'ascii') : toBcd(s)
 }
 
-/** @internal */
 export const readLenHeader = (
   buf: Buffer,
   offset: number,

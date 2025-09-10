@@ -5,7 +5,6 @@ import { applyVarDefaults, buildPayload, readLenHeader, writeLenHeader } from '@
 
 type DecodeVar = { value: Buffer | string; read: number }
 
-/** @internal */
 export const encodeVar = (de: number, f: LLVARFormat | LLLVARFormat, value: Buffer | string): Buffer => {
   const {
     payload: payloadEnc,
@@ -26,7 +25,6 @@ export const encodeVar = (de: number, f: LLVARFormat | LLLVARFormat, value: Buff
   return Buffer.concat([header, payload])
 }
 
-/** @internal */
 export const decodeVar = (de: number, f: LLVARFormat | LLLVARFormat, buf: Buffer, offset: number): DecodeVar => {
   const headerDigits = f.kind.startsWith('LLL') ? 3 : 2
   const { payload: payloadEnc, lenHeader: headerEnc, lenCountMode } = applyVarDefaults(de, f)
