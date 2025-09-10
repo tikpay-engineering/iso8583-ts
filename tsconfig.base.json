@@ -9,6 +9,7 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
+    "stripInternal": true,
     "sourceMap": true,
     "removeComments": false,
     "noImplicitAny": true,

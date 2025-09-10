@@ -1,10 +1,9 @@
 {
   "name": "iso8583-ts",
-  "type": "module",
   "version": "0.0.1",
   "description": "ISO 8583 parser written in TypeScript with LLVAR/LLLVAR enforcement and bitmap handling.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/iso8583.js",
+  "types": "dist/iso8583.d.ts",
   "files": [
     "dist/**/*"
   ],

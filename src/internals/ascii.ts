@@ -1,5 +1,6 @@
 import { ERR } from '@internals/constants'
 
+/** @internal */
 export const readAscii = (buf: Buffer, offset: number, len: number): string => {
   const slice = buf.subarray(offset, offset + len)
   if (slice.length < len) throw new Error(ERR.ASCII_UNDERRUN)

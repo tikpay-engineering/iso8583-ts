@@ -7,7 +7,14 @@ import {
   VarLenHeaderEncoding,
   VarPayloadEncoding,
 } from '@internals/formats'
-import { applyVarDefaults, buildPayload, readLenHeader, writeLenHeader } from '@internals/varlen'
+import {
+  applyVarDefaults,
+  buildPayload,
+  readLenHeader,
+  validateLLLVar,
+  validateLLVar,
+  writeLenHeader,
+} from '@internals/varlen'
 import { toAsciiBuffer, toHex, toHexBuffer } from '../utils'
 
 vi.mock('@internals/bcd', () => ({
@@ -203,6 +210,40 @@ describe('varlen', () => {
         const resp = readLenHeader(toHexBuffer('02ABCDEF'), 0, 2, VarLenHeaderEncoding.BCD)
         expect(resp).to.deep.equal({ len: 2, read: 1 })
         expect(fromBcdMocked).toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('validateLLVar', () => {
+    it('throws if length is 0', () => {
+      expect(() => validateLLVar(Kind.LLVARan, { length: 0 })).toThrow('LLVARan(): length must be > 0')
+    })
+
+    it('throws if length is > 99', () => {
+      expect(() => validateLLVar(Kind.LLVARan, { length: 110 })).toThrow('LLVARan(): length must be <= 99')
+    })
+
+    it('returns kind set to LLVARan', () => {
+      expect(validateLLVar(Kind.LLVARan, { length: 99 })).toStrictEqual({
+        kind: Kind.LLVARan,
+        length: 99,
+      })
+    })
+  })
+
+  describe('validateLLLVar', () => {
+    it('throws if length is 0', () => {
+      expect(() => validateLLLVar(Kind.LLLVARan, { length: 0 })).toThrow('LLLVARan(): length must be > 0')
+    })
+
+    it('throws if length is > 99', () => {
+      expect(() => validateLLLVar(Kind.LLLVARan, { length: 1100 })).toThrow('LLLVARan(): length must be <= 999')
+    })
+
+    it('returns kind set to LLLVARan', () => {
+      expect(validateLLLVar(Kind.LLLVARan, { length: 999 })).toStrictEqual({
+        kind: Kind.LLLVARan,
+        length: 999,
       })
     })
   })
