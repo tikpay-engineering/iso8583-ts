@@ -1,6 +1,7 @@
 import { digitsOnly } from '@internals/digits'
 import { ERR } from './constants'
 
+/** @internal */
 export const fromBcd = (buf: Buffer, digits: number): string => {
   let s = ''
   for (let i = 0; i < buf.length; i++) {
@@ -17,6 +18,7 @@ export const fromBcd = (buf: Buffer, digits: number): string => {
   return s.slice(s.length - digits)
 }
 
+/** @internal */
 export const toBcd = (digits: string): Buffer => {
   const s = digitsOnly(digits)
   const padded = s.length % 2 ? '0' + s : s
