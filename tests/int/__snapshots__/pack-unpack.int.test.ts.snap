@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`integration: pack + unpack with all formats > produces a readable explain output with snapshot check 1`] = `
+"MTI: 0200
+002 PAN (LLVARn) (LLVARn, len=19): 4761731234567890
+003 Processing Code (n, len=6): 000000
+004 Amount (n, len=12): 000000012345
+005 Alpha field (a, len=5): ABCDE
+006 Alphanumeric (an, len=10): ABC123XYZ9
+007 AlphanumericSpec (ans, len=12): ABCDE*FGHIJ!
+008 Binary data (b, len=4): abcd
+020 LLVAR alpha (LLVARan, len=20): ALPHA_VAR
+021 LLVAR ans (LLVARans, len=20): ANS_VAR!@#
+022 LLLVAR alpha (LLLVARan, len=999): ALPHA_LONG_VAR
+023 LLLVAR ans (LLLVARans, len=999): ANS_LONG_VAR*&^
+024 LLLVAR numeric (LLLVARn, len=999): 1234567890"
+`;

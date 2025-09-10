@@ -15,7 +15,7 @@ import {
   validateLLVar,
   writeLenHeader,
 } from '@internals/varlen'
-import { toAsciiBuffer, toHex, toHexBuffer } from '../utils'
+import { toAsciiBuffer, toHex, toHexBuffer } from '../../utils'
 
 vi.mock('@internals/bcd', () => ({
   fromBcd: vi.fn(),

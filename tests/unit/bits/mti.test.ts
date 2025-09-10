@@ -2,7 +2,7 @@ import { assertMTI, decodeMTI, encodeMTI } from '@bits/mti'
 import { readAscii } from '@internals/ascii'
 import { fromBcd, toBcd } from '@internals/bcd'
 import { NumericEncoding } from '@internals/formats'
-import { toAsciiBuffer, toHexBuffer } from '../utils'
+import { toAsciiBuffer, toHexBuffer } from '../../utils'
 
 vi.mock('@internals/bcd', () => ({
   toBcd: vi.fn(),

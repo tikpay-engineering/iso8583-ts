@@ -1,7 +1,7 @@
 import { decodeVar, encodeVar } from '@encodings/varlen'
 import { Kind, VarLenCountMode, VarLenHeaderEncoding, VarPayloadEncoding } from '@internals/formats'
 import { applyVarDefaults, buildPayload, readLenHeader, writeLenHeader } from '@internals/varlen'
-import { toHexBuffer } from '../utils'
+import { toHexBuffer } from '../../utils'
 
 vi.mock('@internals/varlen', () => ({
   applyVarDefaults: vi.fn(),

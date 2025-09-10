@@ -1,6 +1,6 @@
 import { decodeAlpha, encodeAlpha } from '@encodings/alpha'
 import { Kind } from '@internals/formats'
-import { toAsciiBuffer } from '../utils'
+import { toAsciiBuffer } from '../../utils'
 
 vi.mock('@internals/alpha', () => ({
   validateAlpha: vi.fn(),

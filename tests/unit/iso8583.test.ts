@@ -4,8 +4,8 @@ import { decodeAlpha, encodeAlpha } from '@encodings/alpha'
 import { decodeBinary, encodeBinary } from '@encodings/binary'
 import { decodeNumeric, encodeNumeric } from '@encodings/numeric'
 import { decodeVar, encodeVar } from '@encodings/varlen'
-import { AN, B, bitmap, Iso8583, Kind, LLVARn, MessageSpec, N, NumericEncoding, VarLenHeaderEncoding } from '../src'
-import { toHexBuffer } from './utils'
+import { AN, B, bitmap, Iso8583, Kind, LLVARn, MessageSpec, N, NumericEncoding, VarLenHeaderEncoding } from '../../src'
+import { toHexBuffer } from '../utils'
 
 vi.mock('@bits/mti', () => ({
   assertMTI: vi.fn(),
