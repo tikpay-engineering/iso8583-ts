@@ -1,5 +1,4 @@
 import { Kind, NumericEncoding } from '@internals/formats'
-import { describe, expect, it } from 'vitest'
 import { Iso8583, MessageSpec } from '../../src/iso8583'
 
 const messageSpecWithSec: MessageSpec = {
