@@ -28,13 +28,14 @@
 
 ---
 
-A fast and type-safe **ISO 8583 parser/encoder** written in TypeScript, with strict LLVAR/LLLVAR enforcement and bitmap handling.
+A fast and type-safe **ISO 8583 parser/encoder** written in TypeScript, with strict LLVAR/LLLVAR enforcement, bitmap handling and built-in field level BCD/ASCII encoding.
 
 ---
 
 ## 🧰 Features
 
 ✔️ Type-safe message building & parsing\
+✔️ Field level BCD/ASCII encoding configuration\
 ✔️ LLVAR / LLLVAR length enforcement\
 ✔️ Bitmap parsing and generation\
 ✔️ Dual build: ESM + CJS
@@ -42,7 +43,7 @@ A fast and type-safe **ISO 8583 parser/encoder** written in TypeScript, with str
 ## 🚀 Install
 
 ```bash
-npm install iso8583-ts
+npm i @tikpay/iso8583-ts
 ```
 
 ## 📦 Usage
@@ -52,13 +53,13 @@ npm install iso8583-ts
 ---
 
 ```typescript
-import { Iso8583, N, AN, ANS, B, bitmap } from 'iso8583-ts' //ESM
+import { Iso8583, N, AN, ANS, B, bitmap } from '@tikpay/iso8583-ts' //ESM
 ```
 
 or
 
 ```typescript
-const { Iso8583, N, AN, ANS, B, bitmap } = require('iso8583-ts') //CJS
+const { Iso8583, N, AN, ANS, B, bitmap } = require('@tikpay/iso8583-ts') //CJS
 ```
 
 ### Define specification
@@ -66,8 +67,10 @@ const { Iso8583, N, AN, ANS, B, bitmap } = require('iso8583-ts') //CJS
 ---
 
 ```typescript
+import { AN, bitmap, LLVARn... } from '@tikpay/iso8583-ts'
+
 export const sampleSpec: MessageSpec = {
-  0: { name: 'MTI', format: N(4) }, //optional
+  0: { name: 'MTI', format: N(4, { encoding: NumericEncoding.BCD }) }, //optional
   1: { name: 'Bitmap', format: bitmap(8) }, //optional
   2: {
     name: 'PAN',
@@ -115,6 +118,14 @@ console.log(decoded.mti) // '0200'
 console.log(decoded.fields) // { 3: '000000', 4: '00001000', ... }
 ```
 
-### 📄 License
+## ⭐ Inspiration
+
+This library was inspired by excellent work from other ISO 8583 projects, including:
+
+- [@jpos/jPOS](https://github.com/jpos/jPOS)
+- [@zemuldo/iso_8583](https://www.npmjs.com/package/iso_8583)
+- [@micham/iso8583](https://www.npmjs.com/package/@micham/iso8583)
+
+## 📄 License
 
 This project is licensed under the terms of the MIT open source license. Please refer to the LICENSE file for the full terms.

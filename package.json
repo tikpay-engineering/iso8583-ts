@@ -1,7 +1,7 @@
 {
   "name": "@tikpay/iso8583-ts",
   "version": "0.1.0",
-  "description": "ISO 8583 parser written in TypeScript with LLVAR/LLLVAR enforcement and bitmap handling.",
+  "description": "ISO 8583 parser written in TypeScript with LLVAR/LLLVAR enforcement, bitmap handling and built-in field level BCD/ASCII encoding.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tikpay-engineering/iso8583-ts.git"
+    "url": "git+https://github.com/tikpay-engineering/iso8583-ts.git"
   },
   "keywords": [
     "iso8583",
@@ -43,15 +43,16 @@
     "build": "tsup",
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
-    "prepublishOnly": "npm run clean && npm run build",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix",
     "test": "vitest run --coverage",
     "test:unit": "vitest run --project unit --coverage",
     "test:int": "vitest run --project integration",
-    "snap:update": "vitest -u"
+    "snap:update": "vitest -u",
+    "release": "changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "@types/node": "^22.18.0",
     "@typescript-eslint/eslint-plugin": "^8.41.0",
     "@typescript-eslint/parser": "^8.41.0",
