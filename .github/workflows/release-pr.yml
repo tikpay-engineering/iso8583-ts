@@ -23,7 +23,6 @@ jobs:
       - name: Create or update Release PR
         uses: changesets/action@v1
         with:
-          version: true
           commit: 'chore: version packages'
           title: 'chore: release'
         env:
