@@ -67,17 +67,7 @@ const { Iso8583, N, AN, ANS, B, bitmap } = require('@tikpay/iso8583-ts') //CJS
 ---
 
 ```typescript
-import {
-  AN,
-  bitmap,
-  LLVARn,
-  MessageSpec,
-  N,
-  NumericEncoding,
-  VarLenCountMode,
-  VarLenHeaderEncoding,
-  VarPayloadEncoding,
-} from '@tikpay/iso8583-ts'
+import { AN, bitmap, LLVARn... } from '@tikpay/iso8583-ts'
 
 export const sampleSpec: MessageSpec = {
   0: { name: 'MTI', format: N(4, { encoding: NumericEncoding.BCD }) }, //optional
