@@ -1,5 +1,11 @@
 # @tikpay/iso8583-ts
 
+## 0.1.2
+
+### Patch Changes
+
+- 71a8a9a: Set Changesets access to public
+
 ## 0.1.1
 
 ### Patch Changes
