@@ -67,6 +67,7 @@ export type LLLVARFormat = { kind: Kind.LLLVAR | Kind.LLLVARn | Kind.LLLVARan | 
 export type VARFormatRequired = (LLVARFormat | LLLVARFormat) &
   Required<Pick<VarBase, 'payload' | 'lenHeader' | 'lenCountMode'>>
 
+// Implementation inspired by @micham/iso8583 -> using below helper methods that enforce types and required/optional params
 export const N = (length: number, opts?: { encoding?: NumericEncoding }): NFormat => {
   if (length <= 0) throw new Error(ERR.KIND_HELPER_LEN_MUST_BE('N', '>', 0))
   return { kind: Kind.Numeric, length, encoding: opts?.encoding }
