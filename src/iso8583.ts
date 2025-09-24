@@ -38,7 +38,7 @@ export class Iso8583 {
     }
   }
 
-  pack = (mti: string, fields: Record<number, Buffer | string | number>): PackedMessage => {
+  pack(mti: string, fields: Record<number, Buffer | string | number>): PackedMessage {
     assertMTI(mti)
     const present = Object.keys(fields)
       .map(Number)
@@ -57,7 +57,7 @@ export class Iso8583 {
     return { mti, bytes: Buffer.concat(chunks) }
   }
 
-  unpack = (buf: Buffer): UnpackedMessage => {
+  unpack(buf: Buffer): UnpackedMessage {
     let offset = 0
     const { mti, read } = decodeMTI(buf, offset, this.mtiEncoding)
     offset += read
@@ -89,7 +89,7 @@ export class Iso8583 {
     return { mti, fields, bytesRead: offset }
   }
 
-  explain = (buf: Buffer): string => {
+  explain(buf: Buffer): string {
     const decoded = this.unpack(buf)
     const lines = [`MTI: ${decoded.mti}`]
     for (const [idStr, value] of Object.entries(decoded.fields)) {
