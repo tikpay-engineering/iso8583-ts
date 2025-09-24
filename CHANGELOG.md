@@ -1,5 +1,11 @@
 # @tikpay/iso8583-ts
 
+## 0.2.0
+
+### Minor Changes
+
+- d6f5f51: Uplifted pack, unpack and explain methods
+
 ## 0.1.3
 
 ### Patch Changes
