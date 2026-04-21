@@ -5,10 +5,11 @@ import { decodeBinary, encodeBinary } from '@encodings/binary'
 import { decodeNumeric, encodeNumeric } from '@encodings/numeric'
 import { decodeVar, encodeVar } from '@encodings/varlen'
 import { BitmapConstraint, ERR } from '@internals/constants'
-import { FormatObject, Kind, NumericEncoding } from '@internals/formats'
+import { FormatObject, HeaderSpec, Kind, NumericEncoding } from '@internals/formats'
 
 export type EncoderOptions = {
   mtiEncoding?: NumericEncoding
+  header?: HeaderSpec
 }
 
 export type FieldSpec = { name: string; format: FormatObject }
@@ -21,10 +22,11 @@ export class Iso8583 {
   private spec: MessageSpec
   private mtiEncoding: NumericEncoding = NumericEncoding.BCD
   private bitmapConstraint: BitmapConstraint = 64
+  private header?: HeaderSpec
 
-  constructor(spec: MessageSpec) {
+  constructor(spec: MessageSpec, opts?: EncoderOptions) {
     this.spec = spec
-
+    this.header = opts?.header
     const mtiField = this.spec[0]
     if (mtiField) {
       if (mtiField.format.kind !== Kind.Numeric) throw new Error(ERR.INVALID_MTI_SPEC(0))
@@ -54,25 +56,30 @@ export class Iso8583 {
       chunks.push(this.encodeField(de, this.spec[de], fields[de]))
     }
 
-    return { mti, bytes: Buffer.concat(chunks) }
+    const iso = Buffer.concat(chunks)
+    const bytes = this.header ? this.header.encode(iso) : iso
+
+    return { mti, bytes }
   }
 
   unpack(buf: Buffer): UnpackedMessage {
+    const skip = this.header ? this.header.decode(buf).headerLength : 0
+    const messageBuffer = buf.subarray(skip)
     let offset = 0
-    const { mti, read } = decodeMTI(buf, offset, this.mtiEncoding)
+    const { mti, read } = decodeMTI(messageBuffer, offset, this.mtiEncoding)
     offset += read
     assertMTI(mti)
 
-    if (buf.length - offset < 8) throw new Error(ERR.PRIMARY_UNDERRUN)
-    const primary = buf.subarray(offset, offset + 8)
+    if (messageBuffer.length - offset < 8) throw new Error(ERR.PRIMARY_UNDERRUN)
+    const primary = messageBuffer.subarray(offset, offset + 8)
     offset += 8
 
     const hasSecondary = (primary[0] & 0x80) !== 0
     let bitmap = primary
     if (hasSecondary) {
       if (this.bitmapConstraint === 64) throw new Error(ERR.SEC_BITMAP_CONSTRAINED)
-      if (buf.length - offset < 8) throw new Error(ERR.SEC_UNDERRUN)
-      bitmap = Buffer.concat([primary, buf.subarray(offset, offset + 8)])
+      if (messageBuffer.length - offset < 8) throw new Error(ERR.SEC_UNDERRUN)
+      bitmap = Buffer.concat([primary, messageBuffer.subarray(offset, offset + 8)])
       offset += 8
     }
 
@@ -81,7 +88,7 @@ export class Iso8583 {
     for (const de of present) {
       const spec = this.spec[de]
       if (!spec) throw new Error(ERR.NO_SPEC(de))
-      const { value, read } = this.decodeField(de, spec, buf, offset)
+      const { value, read } = this.decodeField(de, spec, messageBuffer, offset)
       fields[de] = value
       offset += read
     }

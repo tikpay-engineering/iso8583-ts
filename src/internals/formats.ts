@@ -36,6 +36,11 @@ export enum Kind {
   Numeric = 'n',
 }
 
+export type HeaderSpec = {
+  encode: (messageBytes: Buffer) => Buffer
+  decode: (buf: Buffer) => { headerLength: number }
+}
+
 export type AFormat = { kind: Kind.Alpha; length: number }
 export type ANFormat = { kind: Kind.AlphaNumeric; length: number }
 export type ANSFormat = { kind: Kind.AlphaNumericSpecial; length: number }
