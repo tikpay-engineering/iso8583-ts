@@ -4,7 +4,19 @@ import { decodeAlpha, encodeAlpha } from '@encodings/alpha'
 import { decodeBinary, encodeBinary } from '@encodings/binary'
 import { decodeNumeric, encodeNumeric } from '@encodings/numeric'
 import { decodeVar, encodeVar } from '@encodings/varlen'
-import { AN, B, bitmap, Iso8583, Kind, LLVARn, MessageSpec, N, NumericEncoding, VarLenHeaderEncoding } from '../../src'
+import {
+  AN,
+  B,
+  bitmap,
+  Iso8583,
+  Kind,
+  LLVARans,
+  LLVARn,
+  MessageSpec,
+  N,
+  NumericEncoding,
+  VarLenHeaderEncoding,
+} from '../../src'
 import { toHexBuffer } from '../utils'
 
 vi.mock('@bits/mti', () => ({
@@ -218,6 +230,59 @@ describe('Iso8583', () => {
       const explainResp = iso8583.explain(Buffer.from([0x12]))
       expect(explainResp).toStrictEqual(
         'MTI: 1210\n003 ProcCode (n, len=6): 000000\n022 POSData (an, len=12): 923456711300',
+      )
+    })
+
+    it('masks fields whose spec declares mask, leaving others untouched', () => {
+      const spec: MessageSpec = {
+        2: { name: 'PAN', format: LLVARn({ length: 19 }), mask: 'pan' },
+        3: { name: 'ProcCode', format: N(6) },
+        35: { name: 'Track2', format: LLVARans({ length: 37 }), mask: 'redact' },
+      }
+      const iso8583 = new Iso8583(spec)
+      vi.spyOn(iso8583, 'unpack').mockReturnValue({
+        mti: '1210',
+        bytesRead: 20,
+        fields: { 2: '4761731234567890', 3: '000000', 35: '4761731234567890=2512' },
+      })
+
+      const explainResp = iso8583.explain(Buffer.from([0x12]))
+      expect(explainResp).toContain('002 PAN (LLVARn, len=19): 476173******7890')
+      expect(explainResp).toContain('003 ProcCode (n, len=6): 000000')
+      expect(explainResp).toContain('035 Track2 (LLVARans, len=37): [redacted]')
+      expect(explainResp).not.toContain('4761731234567890')
+    })
+
+    it('masks a buffer PAN and short PANs without exposing digits', () => {
+      const spec: MessageSpec = {
+        2: { name: 'PAN', format: LLVARn({ length: 19 }), mask: 'pan' },
+        3: { name: 'ShortPAN', format: N(6), mask: 'pan' },
+      }
+      const iso8583 = new Iso8583(spec)
+      vi.spyOn(iso8583, 'unpack').mockReturnValue({
+        mti: '1210',
+        bytesRead: 20,
+        fields: { 2: Buffer.from('4761731234567890', 'ascii'), 3: '1234' },
+      })
+
+      const explainResp = iso8583.explain(Buffer.from([0x12]))
+      const hex = Buffer.from('4761731234567890', 'ascii').toString('hex')
+      const maskedHex = `${hex.slice(0, 6)}${'*'.repeat(hex.length - 10)}${hex.slice(-4)}`
+      expect(explainResp).toContain(`002 PAN (LLVARn, len=19): ${maskedHex}`)
+      expect(explainResp).toContain('003 ShortPAN (n, len=6): ****')
+    })
+
+    it('shows raw values when unmask is set', () => {
+      const spec: MessageSpec = { 2: { name: 'PAN', format: LLVARn({ length: 19 }), mask: 'pan' } }
+      const iso8583 = new Iso8583(spec)
+      vi.spyOn(iso8583, 'unpack').mockReturnValue({
+        mti: '1210',
+        bytesRead: 20,
+        fields: { 2: '4761731234567890' },
+      })
+
+      expect(iso8583.explain(Buffer.from([0x12]), { unmask: true })).toContain(
+        '002 PAN (LLVARn, len=19): 4761731234567890',
       )
     })
   })

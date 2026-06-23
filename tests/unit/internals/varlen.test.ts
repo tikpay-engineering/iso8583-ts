@@ -138,6 +138,12 @@ describe('varlen', () => {
         const ret = buildPayload(VarPayloadEncoding.BINARY, retBuf)
         expect(ret).toStrictEqual({ payload: retBuf, byteLen: retBuf.length, digitLen: 0 })
       })
+      it('throws when a non-hex string is passed in', () => {
+        expect(() => buildPayload(VarPayloadEncoding.BINARY, 'zz12')).toThrow('Invalid hex for binary var-length field')
+      })
+      it('throws when an odd-length hex string is passed in', () => {
+        expect(() => buildPayload(VarPayloadEncoding.BINARY, 'abc')).toThrow('Invalid hex for binary var-length field')
+      })
     })
 
     describe('bcd', () => {

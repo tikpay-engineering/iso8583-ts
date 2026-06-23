@@ -1,5 +1,5 @@
 import { fromBcd, toBcd } from './bcd'
-import { ERR } from './constants'
+import { ERR, RE } from './constants'
 import {
   Kind,
   LLLVARFormat,
@@ -39,7 +39,14 @@ export const buildPayload = (enc: VarPayloadEncoding, value: Buffer | string) =>
     return { payload, byteLen: payload.length, digitLen: 0 }
   }
   if (enc === VarPayloadEncoding.BINARY) {
-    const payload = Buffer.isBuffer(value) ? value : Buffer.from(String(value), 'hex')
+    let payload: Buffer
+    if (Buffer.isBuffer(value)) {
+      payload = value
+    } else {
+      const hex = String(value)
+      if (!RE.HEX.test(hex) || hex.length % 2 !== 0) throw new Error(ERR.VAR_HEX_INVALID)
+      payload = Buffer.from(hex, 'hex')
+    }
     return { payload, byteLen: payload.length, digitLen: 0 }
   }
   const digits = String(value)

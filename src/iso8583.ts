@@ -5,26 +5,50 @@ import { decodeBinary, encodeBinary } from '@encodings/binary'
 import { decodeNumeric, encodeNumeric } from '@encodings/numeric'
 import { decodeVar, encodeVar } from '@encodings/varlen'
 import { BitmapConstraint, ERR } from '@internals/constants'
-import { FormatObject, Kind, NumericEncoding } from '@internals/formats'
+import { FormatObject, HeaderSpec, Kind, NumericEncoding } from '@internals/formats'
 
 export type EncoderOptions = {
-  mtiEncoding?: NumericEncoding
+  /** Optional message header wrapped on pack and skipped on unpack (e.g. an acquirer prefix). */
+  header?: HeaderSpec
 }
 
-export type FieldSpec = { name: string; format: FormatObject }
+/** How `explain()` redacts a field: `'pan'` keeps first 6 / last 4 digits, `'redact'` hides it entirely. */
+export type MaskMode = 'pan' | 'redact'
+
+/** Spec for a single data element. `mask` opts the field into redaction in `explain()`. */
+export type FieldSpec = { name: string; format: FormatObject; mask?: MaskMode }
+
+/** Message spec keyed by DE number. DE 0 sets MTI encoding, DE 1 sets bitmap size; both optional. */
 export type MessageSpec = Record<number, FieldSpec>
 
 export type PackedMessage = { mti: string; bytes: Buffer }
 export type UnpackedMessage = { mti: string; fields: Record<number, Buffer | string | number>; bytesRead: number }
 
+const maskPan = (pan: string): string =>
+  pan.length > 10 ? `${pan.slice(0, 6)}${'*'.repeat(pan.length - 10)}${pan.slice(-4)}` : '*'.repeat(pan.length)
+
+const maskValue = (mask: MaskMode | undefined, value: Buffer | string | number): Buffer | string | number => {
+  if (mask === 'pan') return maskPan(Buffer.isBuffer(value) ? value.toString('hex') : String(value))
+  if (mask === 'redact') return '[redacted]'
+  return value
+}
+
+/**
+ * Encodes and decodes ISO 8583 messages against a {@link MessageSpec}.
+ * @example
+ * const iso = new Iso8583(spec)
+ * const { bytes } = iso.pack('0200', { 3: '000000', 4: '000000001000' })
+ * const { mti, fields } = iso.unpack(bytes) // mti === '0200'
+ */
 export class Iso8583 {
   private spec: MessageSpec
   private mtiEncoding: NumericEncoding = NumericEncoding.BCD
   private bitmapConstraint: BitmapConstraint = 64
+  private header?: HeaderSpec
 
-  constructor(spec: MessageSpec) {
+  constructor(spec: MessageSpec, opts?: EncoderOptions) {
     this.spec = spec
-
+    this.header = opts?.header
     const mtiField = this.spec[0]
     if (mtiField) {
       if (mtiField.format.kind !== Kind.Numeric) throw new Error(ERR.INVALID_MTI_SPEC(0))
@@ -38,6 +62,11 @@ export class Iso8583 {
     }
   }
 
+  /**
+   * Encodes an MTI and a `{ [DE]: value }` map into the message bytes. Only DE 2–128 are
+   * emitted; the bitmap (and a secondary bitmap when any DE > 64) is computed automatically.
+   * Throws if a field has no spec or a value violates its format.
+   */
   pack(mti: string, fields: Record<number, Buffer | string | number>): PackedMessage {
     assertMTI(mti)
     const present = Object.keys(fields)
@@ -54,25 +83,34 @@ export class Iso8583 {
       chunks.push(this.encodeField(de, this.spec[de], fields[de]))
     }
 
-    return { mti, bytes: Buffer.concat(chunks) }
+    const iso = Buffer.concat(chunks)
+    const bytes = this.header ? this.header.encode(iso) : iso
+
+    return { mti, bytes }
   }
 
+  /**
+   * Decodes message bytes into `{ mti, fields, bytesRead }`. Field values are returned as
+   * `string` (numeric/alpha) or `Buffer` (binary). Throws on underruns or unknown DEs.
+   */
   unpack(buf: Buffer): UnpackedMessage {
+    const headerLen = this.header ? this.header.decode(buf).headerLength : 0
+    const messageBuffer = headerLen > 0 ? buf.subarray(headerLen) : buf
     let offset = 0
-    const { mti, read } = decodeMTI(buf, offset, this.mtiEncoding)
+    const { mti, read } = decodeMTI(messageBuffer, offset, this.mtiEncoding)
     offset += read
     assertMTI(mti)
 
-    if (buf.length - offset < 8) throw new Error(ERR.PRIMARY_UNDERRUN)
-    const primary = buf.subarray(offset, offset + 8)
+    if (messageBuffer.length - offset < 8) throw new Error(ERR.PRIMARY_UNDERRUN)
+    const primary = messageBuffer.subarray(offset, offset + 8)
     offset += 8
 
     const hasSecondary = (primary[0] & 0x80) !== 0
     let bitmap = primary
     if (hasSecondary) {
       if (this.bitmapConstraint === 64) throw new Error(ERR.SEC_BITMAP_CONSTRAINED)
-      if (buf.length - offset < 8) throw new Error(ERR.SEC_UNDERRUN)
-      bitmap = Buffer.concat([primary, buf.subarray(offset, offset + 8)])
+      if (messageBuffer.length - offset < 8) throw new Error(ERR.SEC_UNDERRUN)
+      bitmap = Buffer.concat([primary, messageBuffer.subarray(offset, offset + 8)])
       offset += 8
     }
 
@@ -81,7 +119,7 @@ export class Iso8583 {
     for (const de of present) {
       const spec = this.spec[de]
       if (!spec) throw new Error(ERR.NO_SPEC(de))
-      const { value, read } = this.decodeField(de, spec, buf, offset)
+      const { value, read } = this.decodeField(de, spec, messageBuffer, offset)
       fields[de] = value
       offset += read
     }
@@ -89,14 +127,23 @@ export class Iso8583 {
     return { mti, fields, bytesRead: offset }
   }
 
-  explain(buf: Buffer): string {
+  /**
+   * Renders a readable, line-per-field dump. Fields whose spec sets `mask` are redacted by
+   * default; pass `{ unmask: true }` for raw values (local debugging only — never log it).
+   * @example
+   * iso.explain(bytes)
+   * // MTI: 0200
+   * // 002 PAN (LLVARn, len=19): 476173******0119
+   */
+  explain(buf: Buffer, opts?: { unmask?: boolean }): string {
     const decoded = this.unpack(buf)
     const lines = [`MTI: ${decoded.mti}`]
     for (const [idStr, value] of Object.entries(decoded.fields)) {
       const id = Number(idStr)
       const spec = this.spec[id]
       const { kind, length } = spec.format
-      lines.push(`${id.toString().padStart(3, '0')} ${spec.name} (${kind}, len=${length}): ${value}`)
+      const shown = opts?.unmask ? value : maskValue(spec.mask, value)
+      lines.push(`${id.toString().padStart(3, '0')} ${spec.name} (${kind}, len=${length}): ${shown}`)
     }
     return lines.join('\n')
   }

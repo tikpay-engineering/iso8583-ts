@@ -1,4 +1,5 @@
 import { fromBcd, toBcd } from '@internals/bcd'
+import { ERR } from '@internals/constants'
 import { digitsOnly } from '@internals/digits'
 import { NFormat, NumericEncoding } from '@internals/formats'
 
@@ -6,7 +7,9 @@ type NumericReturn = { value: string; read: number }
 
 export const encodeNumeric = (f: NFormat, value: string | number): Buffer => {
   const enc = f.encoding ?? NumericEncoding.BCD
-  let s = digitsOnly(String(value)).padStart(f.length, '0')
+  const digits = digitsOnly(String(value))
+  if (digits.length > f.length) throw new Error(ERR.NUMERIC_EXCEEDS(digits.length, f.length))
+  let s = digits.padStart(f.length, '0')
   if (enc === NumericEncoding.ASCII) return Buffer.from(s, 'ascii')
   if (s.length % 2 !== 0) s = '0' + s
   return toBcd(s)

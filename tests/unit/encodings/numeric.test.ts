@@ -35,6 +35,14 @@ describe('numeric', () => {
         expect(toBcd).toHaveBeenCalled()
       })
     })
+
+    it('throws when the value has more digits than the field length', () => {
+      vi.mocked(digitsOnly).mockReturnValue('12345')
+      expect(() => encodeNumeric({ kind: Kind.Numeric, length: 4, encoding: NumericEncoding.BCD }, '12345')).toThrow(
+        'Numeric value has 5 digits > N4',
+      )
+      expect(toBcd).not.toHaveBeenCalled()
+    })
   })
 
   describe('decodeNumeric', () => {
