@@ -1,5 +1,5 @@
 export { Iso8583 } from './iso8583'
-export type { FieldSpec, MessageSpec } from './iso8583'
+export type { FieldSpec, MaskMode, MessageSpec } from './iso8583'
 
 export {
   A,

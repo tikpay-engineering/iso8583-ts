@@ -26,6 +26,8 @@ export const ERR = {
   KIND_HELPER_LEN_MUST_BE: (helper: string, operator: string, value: number) =>
     `${helper}(): length must be ${operator} ${value}`,
   NO_SPEC: (de: number) => `No spec for DE${de}`,
+  NUMERIC_EXCEEDS: (value: number, max: number) => `Numeric value has ${value} digits > N${max}`,
+  VAR_HEX_INVALID: 'Invalid hex for binary var-length field',
   PRIMARY_UNDERRUN: 'Primary bitmap underrun',
   SEC_BITMAP_CONSTRAINED: 'Secondary bitmap present but constrained to 64',
   SEC_UNDERRUN: 'Secondary bitmap underrun',
