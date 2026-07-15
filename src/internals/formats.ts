@@ -6,6 +6,12 @@ export enum NumericEncoding {
   ASCII = 'ascii',
   BCD = 'bcd',
 }
+
+/** Bitmap wire encoding: raw bytes (default) or ASCII hex (16 chars per 8-byte segment). */
+export enum BitmapEncoding {
+  Binary = 'binary',
+  HexAscii = 'hex-ascii',
+}
 /** Encoding of the LL/LLL length prefix. BCD LL=1 byte/LLL=2 bytes; ASCII LL=2 bytes/LLL=3 bytes. */
 export enum VarLenHeaderEncoding {
   ASCII = 'ascii',
@@ -34,10 +40,12 @@ export enum Kind {
   LLVARn = 'LLVARn',
   LLVARan = 'LLVARan',
   LLVARans = 'LLVARans',
+  LLVARb = 'LLVARb',
   LLLVAR = 'LLLVAR',
   LLLVARn = 'LLLVARn',
   LLLVARan = 'LLLVARan',
   LLLVARans = 'LLLVARans',
+  LLLVARb = 'LLLVARb',
   Numeric = 'n',
 }
 
@@ -51,7 +59,7 @@ export type ANFormat = { kind: Kind.AlphaNumeric; length: number }
 export type ANSFormat = { kind: Kind.AlphaNumericSpecial; length: number }
 export type BFormat = { kind: Kind.Binary; length: number }
 export type NFormat = { kind: Kind.Numeric; length: number; encoding?: NumericEncoding }
-export type BitmapFormat = { kind: Kind.Bitmap; length: 8 | 16 }
+export type BitmapFormat = { kind: Kind.Bitmap; length: 8 | 16; encoding?: BitmapEncoding }
 
 export type FormatObject =
   | NFormat
@@ -67,7 +75,7 @@ export type FormatObject =
 export type VarBase = {
   /** Max logical length: digits for numeric (`*n`) fields, bytes otherwise. */
   length: number
-  /** Value encoding. Defaults: `BCD_DIGITS` for `*n`, otherwise `ASCII`. */
+  /** Value encoding. Defaults: `BCD_DIGITS` for `*n`, `BINARY` for `*b`, otherwise `ASCII`. */
   payload?: VarPayloadEncoding
   /** Length-prefix encoding. Default: `BCD`. */
   lenHeader?: VarLenHeaderEncoding
@@ -75,9 +83,9 @@ export type VarBase = {
   lenCountMode?: VarLenCountMode
 }
 
-export type LLVARFormat = { kind: Kind.LLVAR | Kind.LLVARn | Kind.LLVARan | Kind.LLVARans } & VarBase
+export type LLVARFormat = { kind: Kind.LLVAR | Kind.LLVARn | Kind.LLVARan | Kind.LLVARans | Kind.LLVARb } & VarBase
 
-export type LLLVARFormat = { kind: Kind.LLLVAR | Kind.LLLVARn | Kind.LLLVARan | Kind.LLLVARans } & VarBase
+export type LLLVARFormat = { kind: Kind.LLLVAR | Kind.LLLVARn | Kind.LLLVARan | Kind.LLLVARans | Kind.LLLVARb } & VarBase
 
 export type VARFormatRequired = (LLVARFormat | LLLVARFormat) &
   Required<Pick<VarBase, 'payload' | 'lenHeader' | 'lenCountMode'>>
@@ -114,10 +122,12 @@ export const B = (lengthBytes: number): BFormat => {
   return { kind: Kind.Binary, length: lengthBytes }
 }
 
-/** Bitmap field for DE 1. `8` ⇒ 64-bit (DE 1–64), `16` ⇒ 128-bit (allows DE 65–128). */
-export const bitmap = (lengthBytes: 8 | 16): BitmapFormat => {
+/** Bitmap field for DE 1. `8` ⇒ 64-bit (DE 1–64), `16` ⇒ 128-bit (allows DE 65–128). Pass `{ encoding: BitmapEncoding.HexAscii }` for ASCII hex wire format. */
+export const bitmap = (lengthBytes: 8 | 16, opts?: { encoding?: BitmapEncoding }): BitmapFormat => {
   if (lengthBytes !== 8 && lengthBytes !== 16) throw new Error(ERR.BITMAP_HELPER_SIZE)
-  return { kind: Kind.Bitmap, length: lengthBytes }
+  const format: BitmapFormat = { kind: Kind.Bitmap, length: lengthBytes }
+  if (opts?.encoding) format.encoding = opts.encoding
+  return format
 }
 
 /** Variable field with a 2-digit length header (max length 99); choose `payload` explicitly. */
@@ -139,6 +149,9 @@ export const LLVARan = (opts: VarBase): LLVARFormat => validateLLVar(Kind.LLVARa
 /** Alphanumeric + special variable field, 2-digit length header (max length 99). */
 export const LLVARans = (opts: VarBase): LLVARFormat => validateLLVar(Kind.LLVARans, opts)
 
+/** Binary variable field, 2-digit length header (max length 99). Defaults to `BINARY` payload counted in bytes. Pack with a `Buffer` or even-length hex string. */
+export const LLVARb = (opts: VarBase): LLVARFormat => validateLLVar(Kind.LLVARb, opts)
+
 /** Variable field with a 3-digit length header (max length 999); choose `payload` explicitly. */
 export const LLLVAR = (opts: VarBase): LLLVARFormat => validateLLLVar(Kind.LLLVAR, opts)
 
@@ -150,3 +163,6 @@ export const LLLVARan = (opts: VarBase): LLLVARFormat => validateLLLVar(Kind.LLL
 
 /** Alphanumeric + special variable field, 3-digit length header (max length 999). */
 export const LLLVARans = (opts: VarBase): LLLVARFormat => validateLLLVar(Kind.LLLVARans, opts)
+
+/** Binary variable field, 3-digit length header (max length 999). Defaults to `BINARY` payload counted in bytes. Pack with a `Buffer` or even-length hex string. */
+export const LLLVARb = (opts: VarBase): LLLVARFormat => validateLLLVar(Kind.LLLVARb, opts)

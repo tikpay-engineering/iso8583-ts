@@ -18,6 +18,8 @@ const messageSpec: MessageSpec = {
   22: { name: 'LLLVAR alpha', format: { kind: Kind.LLLVARan, length: 999 } },
   23: { name: 'LLLVAR ans', format: { kind: Kind.LLLVARans, length: 999 } },
   24: { name: 'LLLVAR numeric', format: { kind: Kind.LLLVARn, length: 999 } },
+  25: { name: 'LLVAR binary', format: { kind: Kind.LLVARb, length: 99 } },
+  26: { name: 'LLLVAR binary', format: { kind: Kind.LLLVARb, length: 255 } },
 }
 
 const normalize = (v: string | number | Buffer) => (Buffer.isBuffer(v) ? v.toString('hex') : String(v))
@@ -38,6 +40,8 @@ describe('integration: pack + unpack with all formats', () => {
     22: 'ALPHA_LONG_VAR',
     23: 'ANS_LONG_VAR*&^',
     24: '1234567890',
+    25: Buffer.from('deadbeef', 'hex'),
+    26: Buffer.from('cafe0102030405060708', 'hex'),
   }
 
   it('round-trips a message with one of every format', () => {
