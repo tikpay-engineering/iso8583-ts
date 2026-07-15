@@ -1,5 +1,11 @@
 # @tikpay/iso8583-ts
 
+## 0.4.0
+
+### Minor Changes
+
+- 9d67b25: Added Bitmap encoding choices. Added variable length binary field helpers (LLVARb and LLLVARb)
+
 ## 0.3.0
 
 ### Minor Changes
