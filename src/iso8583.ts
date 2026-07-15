@@ -44,7 +44,7 @@ export class Iso8583 {
   private spec: MessageSpec
   private mtiEncoding: NumericEncoding = NumericEncoding.BCD
   private bitmapConstraint: BitmapConstraint = 64
-  private bitmapEncoding: BitmapEncoding = BitmapEncoding.Binary
+  private bitmapEncoding = BitmapEncoding.Binary
   private header?: HeaderSpec
 
   constructor(spec: MessageSpec, opts?: EncoderOptions) {
