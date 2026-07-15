@@ -1,5 +1,6 @@
 import { buildBitmap, parseBitmap } from '@bits/bitmap'
 import { BitmapConstraint } from '@internals/constants'
+import { BitmapEncoding } from '@internals/formats'
 import { toHex } from '../../utils'
 
 describe('bitmap', () => {
@@ -90,6 +91,52 @@ describe('bitmap', () => {
       expect(toHex(bm).length).toBe(32)
       const parsed = parseBitmap(bm, 128 as BitmapConstraint)
       expect(parsed).toEqual(present)
+    })
+  })
+
+  describe('hex-ascii encoding', () => {
+    it('buildBitmap returns 16 ASCII hex chars for a primary-only bitmap', () => {
+      const buf = buildBitmap([2, 3, 64], 64 as BitmapConstraint, BitmapEncoding.HexAscii)
+      expect(buf.length).toBe(16)
+      expect(buf.toString('ascii')).toBe('6000000000000001')
+    })
+
+    it('buildBitmap returns 32 ASCII hex chars when secondary bitmap is needed', () => {
+      const buf = buildBitmap([2, 65], 128 as BitmapConstraint, BitmapEncoding.HexAscii)
+      expect(buf.length).toBe(32)
+      expect(buf.toString('ascii')).toBe('C0000000000000008000000000000000')
+    })
+
+    it('parseBitmap parses a 16-char hex-ascii primary bitmap', () => {
+      const bm = Buffer.from('6000000000000001', 'ascii')
+      expect(parseBitmap(bm, 64 as BitmapConstraint, BitmapEncoding.HexAscii)).toEqual([2, 3, 64])
+    })
+
+    it('parseBitmap parses a 32-char hex-ascii full bitmap', () => {
+      const bm = Buffer.from('C0000000000000008000000000000000', 'ascii')
+      expect(parseBitmap(bm, 128 as BitmapConstraint, BitmapEncoding.HexAscii)).toEqual([2, 65])
+    })
+
+    it('parseBitmap accepts lowercase hex', () => {
+      const bm = Buffer.from('c0000000000000008000000000000000', 'ascii')
+      expect(parseBitmap(bm, 128 as BitmapConstraint, BitmapEncoding.HexAscii)).toEqual([2, 65])
+    })
+
+    it('parseBitmap throws for invalid hex-ascii size', () => {
+      expect(() => parseBitmap(Buffer.alloc(15), 64 as BitmapConstraint, BitmapEncoding.HexAscii)).toThrow(
+        /16 or 32 chars/,
+      )
+    })
+
+    it('parseBitmap throws for invalid hex characters', () => {
+      const invalid = Buffer.from('ZZZZZZZZZZZZZZZZ', 'ascii')
+      expect(() => parseBitmap(invalid, 64 as BitmapConstraint, BitmapEncoding.HexAscii)).toThrow(/invalid hex/)
+    })
+
+    it('round-trips buildBitmap / parseBitmap with hex-ascii encoding', () => {
+      const present = [2, 38, 65, 100, 128]
+      const bm = buildBitmap(present, 128 as BitmapConstraint, BitmapEncoding.HexAscii)
+      expect(parseBitmap(bm, 128 as BitmapConstraint, BitmapEncoding.HexAscii)).toEqual(present)
     })
   })
 })

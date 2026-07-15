@@ -17,10 +17,13 @@ type HeaderLenInfo = { len: number; read: number }
 export const applyVarDefaults = (de: number, f: LLVARFormat | LLLVARFormat): VARFormatRequired => {
   const kind = f.kind
   const isNumericVar = [Kind.LLVARn, Kind.LLLVARn].includes(kind)
+  const isBinaryVar = [Kind.LLVARb, Kind.LLLVARb].includes(kind)
 
   if (f.lenCountMode === VarLenCountMode.DIGITS && !isNumericVar) throw new Error(ERR.INVALID_VAR_DIGITS_FOR_NON_N(de))
 
-  const payload = f.payload ?? (isNumericVar ? VarPayloadEncoding.BCD_DIGITS : VarPayloadEncoding.ASCII)
+  const payload =
+    f.payload ??
+    (isNumericVar ? VarPayloadEncoding.BCD_DIGITS : isBinaryVar ? VarPayloadEncoding.BINARY : VarPayloadEncoding.ASCII)
   const lenHeader = f.lenHeader ?? VarLenHeaderEncoding.BCD
   const lenCountMode = f.lenCountMode ?? (isNumericVar ? VarLenCountMode.DIGITS : VarLenCountMode.BYTES)
 

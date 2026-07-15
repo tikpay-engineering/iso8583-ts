@@ -8,6 +8,7 @@ import {
   AN,
   B,
   bitmap,
+  BitmapEncoding,
   Iso8583,
   Kind,
   LLVARans,
@@ -136,7 +137,7 @@ describe('Iso8583', () => {
       const iso8583 = new Iso8583(messageSpec)
       const encodeFieldMock = vi.spyOn(iso8583, 'encodeField').mockReturnValue(toHexBuffer('1234'))
       iso8583.pack('1200', call)
-      expect(buildBitmap).toHaveBeenCalledWith([3, 22], 64)
+      expect(buildBitmap).toHaveBeenCalledWith([3, 22], 64, BitmapEncoding.Binary)
       expect(encodeFieldMock).toHaveBeenCalled()
     })
 
@@ -153,7 +154,7 @@ describe('Iso8583', () => {
       })
       const encodeFieldMock = vi.spyOn(iso8583, 'encodeField').mockReturnValue(toHexBuffer('1234'))
       iso8583.pack('1200', call)
-      expect(buildBitmap).toHaveBeenCalledWith([3, 22], 128)
+      expect(buildBitmap).toHaveBeenCalledWith([3, 22], 128, BitmapEncoding.Binary)
       expect(encodeFieldMock).toHaveBeenCalled()
     })
   })
@@ -216,6 +217,62 @@ describe('Iso8583', () => {
       const buf = Buffer.concat([Buffer.alloc(4), primary, Buffer.alloc(16)])
 
       expect(() => iso8583.unpack(buf)).toThrow(/No spec for DE50/)
+    })
+  })
+
+  describe('hex-ascii bitmap', () => {
+    const hexBitmapSpec: MessageSpec = {
+      ...messageSpec,
+      1: { name: 'Bitmap', format: bitmap(16, { encoding: BitmapEncoding.HexAscii }) },
+    }
+
+    it('calls buildBitmap with HexAscii encoding', () => {
+      const iso8583 = new Iso8583(hexBitmapSpec)
+      vi.spyOn(iso8583, 'encodeField').mockReturnValue(toHexBuffer('1234'))
+      iso8583.pack('1200', { 3: '000000' })
+      expect(buildBitmap).toHaveBeenCalledWith([3], 128, BitmapEncoding.HexAscii)
+    })
+
+    it('throws primary bitmap underrun when buffer has fewer than 16 chars', () => {
+      const iso8583 = new Iso8583(hexBitmapSpec)
+      const buf = Buffer.concat([Buffer.alloc(4), Buffer.from('000000000000000', 'ascii')])
+      expect(() => iso8583.unpack(buf)).toThrow(/Primary bitmap underrun/)
+    })
+
+    it('throws secondary bitmap underrun for hex-ascii when secondary is present but missing', () => {
+      const iso8583 = new Iso8583(hexBitmapSpec)
+      const primary = Buffer.from('C000000000000000', 'ascii')
+      const buf = Buffer.concat([Buffer.alloc(4), primary])
+      expect(() => iso8583.unpack(buf)).toThrow(/Secondary bitmap underrun/i)
+    })
+
+    it('reads 16-char segments and passes HexAscii to parseBitmap', () => {
+      const iso8583 = new Iso8583(hexBitmapSpec)
+      vi.mocked(parseBitmap).mockReturnValue([3])
+      vi.spyOn(iso8583, 'decodeField').mockReturnValue({ value: '000000', read: 3 })
+      // '40...' = first hex nibble 4 = 0100, high bit clear → primary only
+      const primary = Buffer.from('4000000000000000', 'ascii')
+      const buf = Buffer.concat([Buffer.alloc(4), primary, Buffer.alloc(32)])
+      const out = iso8583.unpack(buf)
+      expect(parseBitmap).toHaveBeenCalledWith(primary, 128, BitmapEncoding.HexAscii)
+      expect(out.bytesRead).toBe(4 + 16 + 3)
+    })
+
+    it('reads both 16-char segments when secondary is present', () => {
+      const iso8583 = new Iso8583(hexBitmapSpec)
+      vi.mocked(parseBitmap).mockReturnValue([3])
+      vi.spyOn(iso8583, 'decodeField').mockReturnValue({ value: '000000', read: 3 })
+      // 'C0...' = first hex byte 0xC0 → high bit set → secondary present
+      const primary = Buffer.from('C000000000000000', 'ascii')
+      const secondary = Buffer.from('0000000000000000', 'ascii')
+      const buf = Buffer.concat([Buffer.alloc(4), primary, secondary, Buffer.alloc(32)])
+      const out = iso8583.unpack(buf)
+      expect(parseBitmap).toHaveBeenCalledWith(
+        expect.objectContaining({ length: 32 }),
+        128,
+        BitmapEncoding.HexAscii,
+      )
+      expect(out.bytesRead).toBe(4 + 16 + 16 + 3)
     })
   })
 
@@ -323,10 +380,12 @@ describe('Iso8583', () => {
       [Kind.LLVARn, 'LLVARn'],
       [Kind.LLVARan, 'LLVARan'],
       [Kind.LLVARans, 'LLVARans'],
+      [Kind.LLVARb, 'LLVARb'],
       [Kind.LLLVAR, 'LLLVAR'],
       [Kind.LLLVARn, 'LLLVARn'],
       [Kind.LLLVARan, 'LLLVARan'],
       [Kind.LLLVARans, 'LLLVARans'],
+      [Kind.LLLVARb, 'LLLVARb'],
     ] as const)('call encodeVar for $1', (kind, name) => {
       iso8583.encodeField(1, { name, format: { kind, length: 4 } }, Buffer.from([0x01]))
       expect(encodeVarMock).toHaveBeenCalledWith(1, { kind, length: 4 }, Buffer.from([0x01]))
@@ -379,10 +438,12 @@ describe('Iso8583', () => {
       [Kind.LLVARn, 'LLVARn'],
       [Kind.LLVARan, 'LLVARan'],
       [Kind.LLVARans, 'LLVARans'],
+      [Kind.LLVARb, 'LLVARb'],
       [Kind.LLLVAR, 'LLLVAR'],
       [Kind.LLLVARn, 'LLLVARn'],
       [Kind.LLLVARan, 'LLLVARan'],
       [Kind.LLLVARans, 'LLLVARans'],
+      [Kind.LLLVARb, 'LLLVARb'],
     ] as const)('call decodeVar for $1', (kind, name) => {
       iso8583.decodeField(1, { name, format: { kind, length: 4 } }, Buffer.from([0x01]), 0)
       expect(decodeVarMock).toHaveBeenCalledWith(1, { kind, length: 4 }, Buffer.from([0x01]), 0)

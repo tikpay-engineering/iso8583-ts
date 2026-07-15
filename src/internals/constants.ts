@@ -5,6 +5,8 @@ export type BitmapConstraint = 64 | 128
 export const ERR = {
   ASCII_UNDERRUN: 'ASCII underrun',
   BITMAP_64_CONSTRAINT: 'Bitmap constrained to 64 bits but DE>64 present',
+  BITMAP_HEX_INVALID: 'Bitmap hex-ascii contains invalid hex characters',
+  BITMAP_HEX_SIZE: 'Bitmap hex-ascii must be 16 or 32 chars',
   BITMAP_SIZE: 'Bitmap must be 8 or 16 bytes',
   BITMAP_HELPER_SIZE: 'bitmap(): length must be 8 or 16 bytes',
   DE_RANGE: 'DE must be 2..128',

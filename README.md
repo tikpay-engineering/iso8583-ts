@@ -135,11 +135,12 @@ Pass the return value as a field's `format`. Each helper validates its length an
 | `ANS(len)`                                            | ans      | `(length: number)`                                        | Fixed alphanumeric + printable specials.                                |
 | `B(lenBytes)`                                         | b        | `(lengthBytes: number)`                                   | Fixed binary. Value is a `Buffer` or hex string.                        |
 | `bitmap(8 \| 16)`                                     | —        | `(lengthBytes: 8 \| 16)`                                  | DE 1 only. `8` ⇒ 64-bit, `16` ⇒ 128-bit.                                |
-| `LLVAR(opts)`                                         | —        | variable, 2-digit length header                           | Generic; choose `payload` explicitly.                                   |
-| `LLVARn(opts)`                                        | n..      | variable, max length **99**                               | Numeric var.                                                            |
-| `LLVARan(opts)`                                       | an..     | variable, max length **99**                               | Alphanumeric var.                                                       |
-| `LLVARans(opts)`                                      | ans..    | variable, max length **99**                               | Alphanumeric+special var.                                               |
-| `LLLVAR(opts)` / `LLLVARn` / `LLLVARan` / `LLLVARans` | —        | variable, max length **999**                              | 3-digit length header. Same option semantics as the `LL` variants.      |
+| `LLVAR(opts)`                                                         | —        | variable, 2-digit length header                           | Generic; choose `payload` explicitly.                                   |
+| `LLVARn(opts)`                                                        | n..      | variable, max length **99**                               | Numeric var.                                                            |
+| `LLVARan(opts)`                                                       | an..     | variable, max length **99**                               | Alphanumeric var.                                                       |
+| `LLVARans(opts)`                                                      | ans..    | variable, max length **99**                               | Alphanumeric+special var.                                               |
+| `LLVARb(opts)`                                                        | b..      | variable, max length **99**                               | Binary var. Value is a `Buffer` or even-length hex string.              |
+| `LLLVAR(opts)` / `LLLVARn` / `LLLVARan` / `LLLVARans` / `LLLVARb`   | —        | variable, max length **999**                              | 3-digit length header. Same option semantics as the `LL` variants.      |
 
 `opts` for every `LL*`/`LLL*` helper is a `VarBase` (omitted options fall back to the defaults in [Encoding options](#-encoding-options)):
 
@@ -170,6 +171,7 @@ but **set them explicitly when integrating** — the right values come from your
 
 - `lenHeader` → `BCD` always.
 - For **`LLVARn` / `LLLVARn`** (numeric): `payload` → `BCD_DIGITS`, `lenCountMode` → `DIGITS`.
+- For **`LLVARb` / `LLLVARb`** (binary): `payload` → `BINARY`, `lenCountMode` → `BYTES`.
 - For **all other** var helpers: `payload` → `ASCII`, `lenCountMode` → `BYTES`.
 - `lenCountMode: DIGITS` is **only** valid on numeric (`*n`) helpers — it throws otherwise.
 
@@ -197,8 +199,11 @@ Copy-paste field definitions for common data elements:
 // Track 2 (DE 35): ANS variable, max 37, redacted in explain().
 35: { name: 'Track 2', format: LLVARans({ length: 37 }), mask: 'redact' },
 
-// Binary field (DE 52 PIN block): 8 raw bytes. Pass a Buffer or hex string when packing.
+// Fixed binary field (DE 52 PIN block): exactly 8 raw bytes. Pass a Buffer or hex string when packing.
 52: { name: 'PIN', format: B(8), mask: 'redact' },
+
+// Binary variable field (e.g. DE 55 EMV data): up to 255 raw bytes, BCD length header.
+55: { name: 'ICC Data', format: LLLVARb({ length: 255 }) },
 
 // 128-bit message (needed when any DE > 64 is used):
 1: { name: 'Bitmap', format: bitmap(16) },

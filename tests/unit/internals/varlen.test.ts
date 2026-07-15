@@ -58,7 +58,19 @@ describe('varlen', () => {
           expect(ret.kind).toBe(input.kind)
         }
       })
-      it('applies ascii default payload encryption for types other than VARn', () => {
+      it('applies binary default payload for LLVARb and LLLVARb', () => {
+        const cases = [
+          { kind: Kind.LLVARb as const, length: 10 },
+          { kind: Kind.LLLVARb as const, length: 10 },
+        ]
+
+        for (const input of cases) {
+          const ret = applyVarDefaults(12, input)
+          expect(ret.payload).toBe(VarPayloadEncoding.BINARY)
+          expect(ret.kind).toBe(input.kind)
+        }
+      })
+      it('applies ascii default payload encryption for types other than VARn and VARb', () => {
         const cases = [
           { kind: Kind.LLVARan as const, length: 10 },
           { kind: Kind.LLLVARan as const, length: 10 },
@@ -85,6 +97,8 @@ describe('varlen', () => {
         const cases: (LLVARFormat | LLLVARFormat)[] = [
           { kind: Kind.LLVARan, length: 10, lenCountMode: VarLenCountMode.DIGITS },
           { kind: Kind.LLLVARans, length: 10, lenCountMode: VarLenCountMode.DIGITS },
+          { kind: Kind.LLVARb, length: 10, lenCountMode: VarLenCountMode.DIGITS },
+          { kind: Kind.LLLVARb, length: 10, lenCountMode: VarLenCountMode.DIGITS },
         ]
 
         for (const input of cases) {

@@ -5,7 +5,7 @@ import { decodeBinary, encodeBinary } from '@encodings/binary'
 import { decodeNumeric, encodeNumeric } from '@encodings/numeric'
 import { decodeVar, encodeVar } from '@encodings/varlen'
 import { BitmapConstraint, ERR } from '@internals/constants'
-import { FormatObject, HeaderSpec, Kind, NumericEncoding } from '@internals/formats'
+import { BitmapEncoding, FormatObject, HeaderSpec, Kind, NumericEncoding } from '@internals/formats'
 
 export type EncoderOptions = {
   /** Optional message header wrapped on pack and skipped on unpack (e.g. an acquirer prefix). */
@@ -44,6 +44,7 @@ export class Iso8583 {
   private spec: MessageSpec
   private mtiEncoding: NumericEncoding = NumericEncoding.BCD
   private bitmapConstraint: BitmapConstraint = 64
+  private bitmapEncoding = BitmapEncoding.Binary
   private header?: HeaderSpec
 
   constructor(spec: MessageSpec, opts?: EncoderOptions) {
@@ -59,6 +60,7 @@ export class Iso8583 {
     if (bmField) {
       if (bmField.format.kind !== Kind.Bitmap) throw new Error(ERR.INVALID_BITMAP_SPEC(1))
       this.bitmapConstraint = bmField.format.length === 8 ? 64 : 128
+      this.bitmapEncoding = bmField.format.encoding ?? BitmapEncoding.Binary
     }
   }
 
@@ -77,7 +79,7 @@ export class Iso8583 {
 
     const chunks: Buffer[] = []
     chunks.push(encodeMTI(mti, this.mtiEncoding))
-    chunks.push(buildBitmap(present, this.bitmapConstraint))
+    chunks.push(buildBitmap(present, this.bitmapConstraint, this.bitmapEncoding))
 
     for (const de of present) {
       chunks.push(this.encodeField(de, this.spec[de], fields[de]))
@@ -101,20 +103,25 @@ export class Iso8583 {
     offset += read
     assertMTI(mti)
 
-    if (messageBuffer.length - offset < 8) throw new Error(ERR.PRIMARY_UNDERRUN)
-    const primary = messageBuffer.subarray(offset, offset + 8)
-    offset += 8
+    const segmentSize = this.bitmapEncoding === BitmapEncoding.HexAscii ? 16 : 8
+    if (messageBuffer.length - offset < segmentSize) throw new Error(ERR.PRIMARY_UNDERRUN)
+    const primary = messageBuffer.subarray(offset, offset + segmentSize)
+    offset += segmentSize
 
-    const hasSecondary = (primary[0] & 0x80) !== 0
+    const firstByte =
+      this.bitmapEncoding === BitmapEncoding.HexAscii
+        ? parseInt(primary.subarray(0, 2).toString('ascii'), 16)
+        : primary[0]
+    const hasSecondary = (firstByte & 0x80) !== 0
     let bitmap = primary
     if (hasSecondary) {
       if (this.bitmapConstraint === 64) throw new Error(ERR.SEC_BITMAP_CONSTRAINED)
-      if (messageBuffer.length - offset < 8) throw new Error(ERR.SEC_UNDERRUN)
-      bitmap = Buffer.concat([primary, messageBuffer.subarray(offset, offset + 8)])
-      offset += 8
+      if (messageBuffer.length - offset < segmentSize) throw new Error(ERR.SEC_UNDERRUN)
+      bitmap = Buffer.concat([primary, messageBuffer.subarray(offset, offset + segmentSize)])
+      offset += segmentSize
     }
 
-    const present = parseBitmap(bitmap, this.bitmapConstraint)
+    const present = parseBitmap(bitmap, this.bitmapConstraint, this.bitmapEncoding)
     const fields: Record<number, Buffer | string | number> = {}
     for (const de of present) {
       const spec = this.spec[de]
@@ -143,7 +150,8 @@ export class Iso8583 {
       const spec = this.spec[id]
       const { kind, length } = spec.format
       const shown = opts?.unmask ? value : maskValue(spec.mask, value)
-      lines.push(`${id.toString().padStart(3, '0')} ${spec.name} (${kind}, len=${length}): ${shown}`)
+      const display = Buffer.isBuffer(shown) ? shown.toString('hex') : shown
+      lines.push(`${id.toString().padStart(3, '0')} ${spec.name} (${kind}, len=${length}): ${display}`)
     }
     return lines.join('\n')
   }
@@ -163,10 +171,12 @@ export class Iso8583 {
       case Kind.LLVARn:
       case Kind.LLVARan:
       case Kind.LLVARans:
+      case Kind.LLVARb:
       case Kind.LLLVAR:
       case Kind.LLLVARn:
       case Kind.LLLVARan:
       case Kind.LLLVARans:
+      case Kind.LLLVARb:
         return encodeVar(de, f, value as Buffer | string)
       default:
         throw new Error(ERR.UNSUPPORTED(f.kind))
@@ -188,10 +198,12 @@ export class Iso8583 {
       case Kind.LLVARn:
       case Kind.LLVARan:
       case Kind.LLVARans:
+      case Kind.LLVARb:
       case Kind.LLLVAR:
       case Kind.LLLVARn:
       case Kind.LLLVARan:
       case Kind.LLLVARans:
+      case Kind.LLLVARb:
         return decodeVar(de, f, buf, offset)
       default:
         throw new Error(ERR.UNSUPPORTED(f.kind))

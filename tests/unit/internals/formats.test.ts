@@ -4,14 +4,17 @@ import {
   ANS,
   B,
   bitmap,
+  BitmapEncoding,
   Kind,
   LLLVAR,
   LLLVARan,
   LLLVARans,
+  LLLVARb,
   LLLVARn,
   LLVAR,
   LLVARan,
   LLVARans,
+  LLVARb,
   LLVARn,
   N,
   NumericEncoding,
@@ -93,10 +96,17 @@ describe('formats', () => {
     it('throws if length is not 8 or 16', () => {
       expect(() => bitmap(10 as any)).toThrow('bitmap(): length must be 8 or 16 bytes')
     })
-    it('returns kind set to Bitmap', () => {
+    it('returns kind set to Bitmap without encoding when not specified', () => {
       expect(bitmap(8)).toStrictEqual({
         kind: Kind.Bitmap,
         length: 8,
+      })
+    })
+    it('returns encoding when specified', () => {
+      expect(bitmap(16, { encoding: BitmapEncoding.HexAscii })).toStrictEqual({
+        kind: Kind.Bitmap,
+        length: 16,
+        encoding: BitmapEncoding.HexAscii,
       })
     })
   })
@@ -122,6 +132,13 @@ describe('formats', () => {
         method: LLVARans,
         methodName: 'LLVARans',
         kind: Kind.LLVARans,
+        expected: validateLLVar,
+        expectedName: 'validateLLVar',
+      },
+      {
+        method: LLVARb,
+        methodName: 'LLVARb',
+        kind: Kind.LLVARb,
         expected: validateLLVar,
         expectedName: 'validateLLVar',
       },
@@ -151,6 +168,13 @@ describe('formats', () => {
         method: LLLVARans,
         methodName: 'LLLVARans',
         kind: Kind.LLLVARans,
+        expected: validateLLLVar,
+        expectedName: 'validateLLLVar',
+      },
+      {
+        method: LLLVARb,
+        methodName: 'LLLVARb',
+        kind: Kind.LLLVARb,
         expected: validateLLLVar,
         expectedName: 'validateLLLVar',
       },
